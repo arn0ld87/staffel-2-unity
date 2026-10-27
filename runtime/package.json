@@ -1,0 +1,9 @@
+{
+  "name": "staffel-2-linux-host",
+  "private": true,
+  "type": "module",
+  "description": "Headless v86-Host für die native Staffel 2: verbindet die serielle Konsole und den Prüfkanal der Alpine-VM mit stdin/stdout.",
+  "dependencies": {
+    "v86": "0.5.471"
+  }
+}

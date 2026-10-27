@@ -1,0 +1,26 @@
+# Unity
+/Game/[Ll]ibrary/
+/Game/[Tt]emp/
+/Game/[Oo]bj/
+/Game/[Ll]ogs/
+/Game/[Uu]ser[Ss]ettings/
+/Game/[Bb]uild/
+/Game/MemoryCaptures/
+/Game/*.csproj
+/Game/*.sln
+/Game/*.slnx
+/Game/.vs/
+/Game/.idea/
+# Gebaute Player und Laufzeit-Binaries (Release-Artefakte, nicht versioniert)
+/Builds/*
+!/Builds/README.md
+/runtime/node_modules/
+/runtime/dist/
+# VM-Image wird aus der Webversion übernommen (siehe runtime/README.md)
+/runtime/assets/linux/
+/Game/Assets/StreamingAssets/linux/
+/Game/Assets/StreamingAssets/linux.meta
+.DS_Store
+.env
+*.env
+/Game/.vscode/
