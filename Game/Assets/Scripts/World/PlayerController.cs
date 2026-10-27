@@ -108,6 +108,15 @@ namespace Staffel2.World
             UpdateCamera();
         }
 
+        /// <summary>Blickrichtung von außen setzen (geführte Kamerafahrt der Demo).</summary>
+        public void SetLook(float yaw, float pitch)
+        {
+            _yaw = yaw;
+            _pitch = Mathf.Clamp(pitch, -85f, 85f);
+            transform.rotation = Quaternion.Euler(0f, _yaw, 0f);
+            UpdateCamera();
+        }
+
         void UpdateCamera()
         {
             if (_camera == null) return;

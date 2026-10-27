@@ -5,7 +5,7 @@ using Staffel2.Core;
 
 namespace Staffel2.Game
 {
-    public enum PlanArt { Tippe, Antwort, Vorwurf, Speichern, Fortsetzen, Fallakte, Terminal, Raum }
+    public enum PlanArt { Tippe, Antwort, Vorwurf, Speichern, Fortsetzen, Fallakte, Terminal, Raum, Pause }
 
     /// <summary>Ein Schritt eines Durchspielplans mit der Bedingung, die danach gelten muss.</summary>
     public sealed class PlanSchritt
@@ -62,6 +62,36 @@ namespace Staffel2.Game
                 case 3: return Episode3();
                 default: return null;
             }
+        }
+
+        /// <summary>
+        /// Langsamer Vorführlauf (-kino): Lösungsweg wie oben, dazu sichtbare Fehler – ein
+        /// vertippter Befehl, eine falsche Antwort und ein falscher Vorwurf. Nur E0 (ohne Sperre).
+        /// </summary>
+        public static List<PlanSchritt> Kino(int nr) => nr == 0 ? Kino0() : null;
+
+        private static List<PlanSchritt> Kino0()
+        {
+            const string ordner = "/srv/rechenwerk/uebung";
+            return new List<PlanSchritt>
+            {
+                PlanSchritt.Ansicht(PlanArt.Terminal),
+                PlanSchritt.Tippe($"ls -l {ordner}"),
+                PlanSchritt.Tippe($"grpe 2026-04-15 {ordner}/kaffeekasse.csv"),
+                PlanSchritt.Tippe($"ls -l {ordner}/kaffeekasse.csv {ordner}/kaffeekasse.bak > ~/belege/kasse-meta.txt", Beleg("kasse-meta")),
+                PlanSchritt.Tippe("cat ~/belege/kasse-meta.txt"),
+                PlanSchritt.Ansicht(PlanArt.Fallakte),
+                PlanSchritt.Antwort("akte", "timo", NichtErledigt("akte", "besitzer"), "Gegenprobe: falsche Antwort"),
+                PlanSchritt.Antwort("akte", "kaffee", Schritt("akte", "besitzer")),
+                PlanSchritt.Ansicht(PlanArt.Terminal),
+                PlanSchritt.Tippe($"grep 2026-04-15 {ordner}/kaffeekasse.csv > ~/belege/kasse-zeilen.txt && grep 2026-04-15 {ordner}/kaffeekasse.bak >> ~/belege/kasse-zeilen.txt", Beleg("kasse-zeilen")),
+                PlanSchritt.Tippe($"cp {ordner}/kaffeekasse.bak {ordner}/kaffeekasse.csv", Schritt("inhalt", "kasse-zurueck")),
+                PlanSchritt.Ansicht(PlanArt.Pause),
+                PlanSchritt.Fortsetzen(),
+                PlanSchritt.Ansicht(PlanArt.Fallakte),
+                PlanSchritt.Vorwurf("timo", NichtGeloest, "Gegenprobe: falscher Vorwurf"),
+                PlanSchritt.Vorwurf("kaffee", Geloest),
+            };
         }
 
         private static List<PlanSchritt> Episode0()

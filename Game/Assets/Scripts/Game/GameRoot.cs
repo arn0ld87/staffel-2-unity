@@ -89,14 +89,14 @@ namespace Staffel2.Game
             string Wert(string name) { int i = Array.IndexOf(args, name); return i >= 0 && i + 1 < args.Length ? args[i + 1] : null; }
             if (!args.Contains("-demo")) return;
             var episoden = (Wert("-episoden") ?? "0").Split(',').Select(x => int.TryParse(x, out var n) ? n : -1).Where(n => n >= 0);
-            StarteDemo(Wert("-aufnahme"), Wert("-protokoll"), episoden, args.Contains("-schnell"));
+            StarteDemo(Wert("-aufnahme"), Wert("-protokoll"), episoden, args.Contains("-schnell"), args.Contains("-kino"));
         }
 
         /// <summary>Automatischer Durchlauf (auch aus Tests und dem Editor aufrufbar).</summary>
-        public DemoRegie StarteDemo(string aufnahme, string protokoll, System.Collections.Generic.IEnumerable<int> episoden, bool schnell)
+        public DemoRegie StarteDemo(string aufnahme, string protokoll, System.Collections.Generic.IEnumerable<int> episoden, bool schnell, bool kino = false)
         {
             var regie = gameObject.AddComponent<DemoRegie>();
-            regie.Starten(this, aufnahme, protokoll, episoden, schnell);
+            regie.Starten(this, aufnahme, protokoll, episoden, schnell, kino);
             return regie;
         }
 
