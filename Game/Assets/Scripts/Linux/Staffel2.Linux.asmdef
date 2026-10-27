@@ -1,0 +1,9 @@
+{
+    "name": "Staffel2.Linux",
+    "rootNamespace": "Staffel2.Linux",
+    "references": [],
+    "noEngineReferences": true,
+    "overrideReferences": true,
+    "precompiledReferences": ["Newtonsoft.Json.dll"],
+    "autoReferenced": true
+}
