@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>disable</Nullable>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.*" />
+    <PackageReference Include="NUnit" Version="4.*" />
+    <PackageReference Include="NUnit3TestAdapter" Version="5.*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../Staffel2.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="../staffel2.fixture.json" Link="staffel2.fixture.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Fixtures/*.json" Link="%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+</Project>
