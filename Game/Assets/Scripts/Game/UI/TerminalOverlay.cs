@@ -46,10 +46,17 @@ namespace Staffel2.Game.UI
             // Rechte Spalte: Auftrag, Pager, Knöpfe.
             var spalte = UiBaukasten.Flaeche(Wurzel, "Seitenleiste", UiBaukasten.Panel);
             UiBaukasten.Anker(spalte, new Vector2(0.68f, 0), new Vector2(1, 1), new Vector2(10, 28), new Vector2(-28, -28));
-            var kicker = UiBaukasten.Kicker(spalte, "Auftrag");
-            UiBaukasten.Anker(kicker.rectTransform, new Vector2(0, 1), new Vector2(1, 1), new Vector2(20, -44), new Vector2(-20, -14));
+            var portraet = UiBaukasten.Portraet(spalte, spiel.Alex?.Bild);
+            float links = 20;
+            if (portraet != null)
+            {
+                UiBaukasten.Anker(portraet.rectTransform, new Vector2(0, 1), new Vector2(0, 1), new Vector2(16, -176), new Vector2(16 + 128, -16));
+                links = 160;
+            }
+            var kicker = UiBaukasten.Kicker(spalte, "Auftrag · Alexander");
+            UiBaukasten.Anker(kicker.rectTransform, new Vector2(0, 1), new Vector2(1, 1), new Vector2(links, -44), new Vector2(-20, -14));
             _auftrag = UiBaukasten.Text(spalte, "", 20, UiBaukasten.Tinte);
-            UiBaukasten.Anker(_auftrag.rectTransform, new Vector2(0, 1), new Vector2(1, 1), new Vector2(20, -170), new Vector2(-20, -50));
+            UiBaukasten.Anker(_auftrag.rectTransform, new Vector2(0, 1), new Vector2(1, 1), new Vector2(links, -176), new Vector2(-20, -50));
 
             var pagerKicker = UiBaukasten.Kicker(spalte, "Pager");
             UiBaukasten.Anker(pagerKicker.rectTransform, new Vector2(0, 1), new Vector2(1, 1), new Vector2(20, -210), new Vector2(-20, -180));

@@ -31,6 +31,7 @@ namespace Staffel2.Game
         public LinuxSitzung Linux { get; private set; }
         public Ermittlungssitzung Sitzung { get; private set; }
         public Ansicht Ansicht { get; private set; } = Ansicht.Menue;
+        public AlexDialogStudio Alex { get; private set; }
         public string LadeText { get; private set; }
 
         public event Action AnsichtGeaendert;
@@ -63,6 +64,7 @@ namespace Staffel2.Game
 
             Linux = gameObject.AddComponent<LinuxSitzung>();
             _audio = gameObject.AddComponent<SpielAudio>();
+            Alex = new GameObject("AlexDialogStudio").AddComponent<AlexDialogStudio>();
             _spieler = FindFirstObjectByType<PlayerController>();
             _interaktor = FindFirstObjectByType<PlayerInteractor>();
             _racks = FindObjectsByType<RackStatusLights>(FindObjectsSortMode.None);
@@ -110,6 +112,12 @@ namespace Staffel2.Game
                 else if (Ansicht == Ansicht.Raum && kb.pKey.wasPressedThisFrame) Zeige(Ansicht.Pager);
             }
             _ui.Aktualisiere();
+            if (Alex?.Figur != null)
+            {
+                Alex.Figur.BewegungReduziert = Einstellungen.BewegungReduziert;
+                // Tippt man im Terminal, hört Alex zu (solange er nicht selbst spricht).
+                if (Ansicht == Ansicht.Terminal && kb != null && kb.anyKey.wasPressedThisFrame) Alex.Figur.Haltung(AlexHaltung.Zuhoeren, 2.5f);
+            }
             if (Sitzung != null && Sitzung.Bereit && Time.unscaledTime > _naechstesAutosave)
             {
                 _naechstesAutosave = Time.unscaledTime + 120f;
@@ -204,7 +212,7 @@ namespace Staffel2.Game
             Sitzung = sitzung;
             sitzung.Geaendert += RaumAnzeigenAktualisieren;
             sitzung.Protokoll += text => { Debug.Log("Ermittlung: " + text); Protokoll?.Invoke(text); };
-            sitzung.NeueNachricht += n => { _audio.Pager(n.Art); _ui.Hud.Pager(n); };
+            sitzung.NeueNachricht += n => { _audio.Pager(n.Art); _ui.Hud.Pager(n); AlexReagiert(n); };
             sitzung.EreignisEingetreten += e =>
             {
                 if (e.Art == EreignisArt.SchrittErledigt || e.Art == EreignisArt.BelegErkannt) _ = SpeichernAsync(false);
@@ -232,6 +240,19 @@ namespace Staffel2.Game
         }
 
         private void PromptSignal(string payload) => Sitzung?.PromptSignal(payload);
+
+        /// <summary>Alex spricht so lange, wie der Pager-Text in der Webversion zum Erscheinen braucht.</summary>
+        private void AlexReagiert(PagerNachricht n)
+        {
+            var figur = Alex?.Figur;
+            if (figur == null) return;
+            var takt = Daten.PagerTakt;
+            int zeichen = n.Zeilen.Sum(z => z.Length);
+            float dauer = (zeichen * (takt?.MsJeZeichen ?? 12) + n.Zeilen.Count * (takt?.MsJeZeile ?? 200)) / 1000f;
+            figur.Spreche(dauer);
+            bool ernst = Sitzung != null && (Sitzung.Zustand.EinsatzrahmenVerletzt || ErmittlungsEngine.IstGesperrt(Sitzung.Zustand));
+            figur.Ausdruck(ernst ? 1f : n.Art == "erledigt" || n.Art == "szene" ? 0f : 0.45f);
+        }
 
         private async Task AbschliessenAsync(AkteEintrag eintrag)
         {

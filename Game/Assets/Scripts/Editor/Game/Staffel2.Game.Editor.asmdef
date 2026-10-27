@@ -1,0 +1,7 @@
+{
+    "name": "Staffel2.Game.Editor",
+    "rootNamespace": "Staffel2.Game.Editor",
+    "references": ["Staffel2.Game", "Staffel2.World"],
+    "includePlatforms": ["Editor"],
+    "autoReferenced": false
+}

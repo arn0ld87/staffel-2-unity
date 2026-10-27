@@ -134,6 +134,21 @@ namespace Staffel2.Game.UI
         /// <summary>Für UI-Klickgeräusche; die Audioschicht hängt sich hier an.</summary>
         public static event Action Klick;
 
+        /// <summary>Bild der Alex-Büste (RenderTexture) mit dünnem Rahmen; null, wenn es kein Bild gibt.</summary>
+        public static RawImage Portraet(Transform parent, Texture bild)
+        {
+            if (bild == null) return null;
+            var go = new GameObject("Portraet", typeof(RectTransform), typeof(RawImage), typeof(Outline));
+            go.transform.SetParent(parent, false);
+            var img = go.GetComponent<RawImage>();
+            img.texture = bild;
+            img.raycastTarget = false;
+            var rand = go.GetComponent<Outline>();
+            rand.effectColor = Linie;
+            rand.effectDistance = new Vector2(1, -1);
+            return img;
+        }
+
         public static VerticalLayoutGroup Spalte(RectTransform rt, float abstand = 10, int rand = 0)
         {
             var v = rt.gameObject.AddComponent<VerticalLayoutGroup>();

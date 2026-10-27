@@ -39,11 +39,13 @@ namespace Staffel2.Game.UI
             UiBaukasten.Fuellen(_ziel.rectTransform, 16, 10, 16, 12);
 
             _pagerKarte = UiBaukasten.Flaeche(Wurzel, "Pager", UiBaukasten.Panel);
-            UiBaukasten.Anker(_pagerKarte, new Vector2(1, 1), new Vector2(1, 1), new Vector2(-620, -240), new Vector2(-24, -24));
-            var kicker = UiBaukasten.Kicker(_pagerKarte, "Pager · P für Verlauf");
-            UiBaukasten.Anker(kicker.rectTransform, new Vector2(0, 1), new Vector2(1, 1), new Vector2(16, -40), new Vector2(-16, -10));
+            UiBaukasten.Anker(_pagerKarte, new Vector2(1, 1), new Vector2(1, 1), new Vector2(-760, -260), new Vector2(-24, -24));
+            var kicker = UiBaukasten.Kicker(_pagerKarte, "Alexander · Pager · P für Verlauf");
+            UiBaukasten.Anker(kicker.rectTransform, new Vector2(0, 1), new Vector2(1, 1), new Vector2(spiel.Alex?.Bild != null ? 196 : 16, -40), new Vector2(-16, -10));
+            var portraet = UiBaukasten.Portraet(_pagerKarte, spiel.Alex?.Bild);
+            if (portraet != null) UiBaukasten.Anker(portraet.rectTransform, new Vector2(0, 0), new Vector2(0, 1), new Vector2(12, 12), new Vector2(12 + 172, -12));
             _pagerText = UiBaukasten.Text(_pagerKarte, "", 19, UiBaukasten.Tinte);
-            UiBaukasten.Fuellen(_pagerText.rectTransform, 16, 12, 16, 46);
+            UiBaukasten.Fuellen(_pagerText.rectTransform, portraet != null ? 196 : 16, 12, 16, 46);
             _pagerText.overflowMode = TextOverflowModes.Ellipsis;
             _pagerKarte.gameObject.SetActive(false);
 
