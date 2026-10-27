@@ -12,3 +12,12 @@
 7. 2026-10-27: Erster spielbarer Abschnitt. Im Editor-Play-Mode E0 Schritte 1–3 mit echten Prüfungen gelöst, falsche Antwort abgewiesen.
 8. 2026-10-27: Erster nativer macOS-Build (`Builds/macOS/LinuxKrimi.app`, Mono, arm64, 467 MB, 0 Fehler). Demo-Modus im Build: E0 komplett gelöst, Speichern mitten im Fall (15 MiB), Vorwurf richtig, Exit 0. Video: `docs/demo/staffel2-demo-episode0.mp4`.
    Offen: Im Hauptmenü dauerten während der Aufnahme einzelne Bilder mehrere Sekunden (Ursache ungeklärt); die angezeigte Falldauer im Demo-Lauf ist Spielzeit der Aufnahme, nicht Echtzeit.
+9. 2026-10-27: Durchspielpläne E0–E3 (Lösungswege und Gegenproben wörtlich aus den E2E-Specs der Webversion) im Demo-Modus.
+   Gefundene und behobene Fehler: Prüflauf-Rückrufe auf Hintergrundthreads (Unity-APIs warfen, Ereignisse gingen verloren);
+   Speichern-Warteschlange blieb hängen (Reihenfolgefehler); „–“ im Spielstandpfad kam über stdin als „?“ an;
+   Setups über 55 s (Grenze des mission-agent im Image) laufen jetzt losgelöst im Gast mit Abfrage des Exit-Codes.
+   Nachweise (Editor-Play-Mode, Mac unter hoher Systemlast, Load 90–230):
+   E0, E1, E3 je komplett inkl. Gegenproben (`docs/tests/editor-durchlauf-e0-e3.txt`), E2 komplett (`editor-durchlauf-e2-e0.txt`),
+   E0 mit Speichern → Hauptmenü → Fortsetzen → Belege in der fortgesetzten VM 12/12 (`editor-durchlauf-e0-speichern.txt`).
+   EditMode 13/13, dotnet 129/129.
+10. 2026-10-27: Alex-Büste mit Shape Keys (Blinzeln_L/R, Mund_Auf, Mund_Schmal, Neutral) aus `tools/blender/alex_gesicht.py`; Vorschau `docs/alex/vorschau_uebersicht.png`. Neutral wirkt noch leicht schief.

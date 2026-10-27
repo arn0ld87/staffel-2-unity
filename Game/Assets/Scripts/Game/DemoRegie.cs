@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Staffel2.World;
@@ -8,30 +9,52 @@ using UnityEngine;
 namespace Staffel2.Game
 {
     /// <summary>
-    /// Spielt Episode 0 automatisch mit den vorgesehenen Lösungen durch, so wie ein Mensch:
-    /// Menü, zum Arbeitsplatz gehen, Terminal öffnen, Befehle tippen, echte Prüfungen
-    /// abwarten, Antwort und Vorwurf in der Fallakte, Abschluss. Dient als Video-Demo und als
-    /// Durchspieltest im gebauten Player (Start mit -demo [-aufnahme ordner] [-protokoll datei]).
+    /// Spielt Episoden automatisch mit den vorgesehenen Lösungen durch, so wie ein Mensch:
+    /// zum Arbeitsplatz gehen, Terminal öffnen, Befehle tippen, echte Prüfungen abwarten,
+    /// Antworten und Vorwurf in der Fallakte, Abschluss. Jede Erwartung wird geprüft und
+    /// protokolliert; der Exit-Code des Players meldet Fehler. Dient als Video-Demo und als
+    /// Durchspieltest im gebauten Player:
+    ///   -demo [-episoden 0,1,2,3] [-schnell] [-aufnahme ordner] [-protokoll datei] [-spielstand ordner]
     /// </summary>
     public sealed class DemoRegie : MonoBehaviour
     {
-        private const float ZeichenProSekunde = 22f;
         private GameRoot _spiel;
         private StreamWriter _protokoll;
         private BildAufnahme _aufnahme;
-        public bool Fertig { get; private set; }
-        public bool Erfolgreich { get; private set; }
+        private List<int> _episoden;
+        private bool _schnell;
+        private int _fehler, _bestanden;
+        private readonly List<float> _bildzeiten = new List<float>();
 
-        public void Starten(GameRoot spiel, string aufnahmeOrdner, string protokollDatei)
+        public bool Fertig { get; private set; }
+        public bool Erfolgreich => _fehler == 0 && _bestanden > 0;
+
+        public void Starten(GameRoot spiel, string aufnahmeOrdner, string protokollDatei, IEnumerable<int> episoden, bool schnell)
         {
             _spiel = spiel;
+            _episoden = episoden.ToList();
+            _schnell = schnell;
             if (!string.IsNullOrEmpty(protokollDatei)) _protokoll = new StreamWriter(protokollDatei, false) { AutoFlush = true };
             if (!string.IsNullOrEmpty(aufnahmeOrdner))
             {
                 _aufnahme = gameObject.AddComponent<BildAufnahme>();
                 _aufnahme.Starten(aufnahmeOrdner);
             }
+            Log($"Demo: Episoden {string.Join(",", _episoden)}, {(schnell ? "schnell" : "normal")}, {Screen.width}×{Screen.height}, {SystemInfo.graphicsDeviceName}, Qualität {QualitySettings.names[QualitySettings.GetQualityLevel()]}");
             StartCoroutine(Ablauf());
+        }
+
+        private void Update() => _bildzeiten.Add(Time.unscaledDeltaTime);
+
+        /// <summary>Bildrate seit dem letzten Aufruf (Echtzeit), für das Protokoll.</summary>
+        private string Bildrate()
+        {
+            if (_bildzeiten.Count < 2) return "keine Messung";
+            var z = _bildzeiten.Skip(1).OrderBy(x => x).ToList();
+            float mittel = z.Average();
+            float p95 = z[Mathf.Min(z.Count - 1, (int)(z.Count * 0.95f))];
+            _bildzeiten.Clear();
+            return $"{1f / mittel:0} fps im Mittel, 95 % der Bilder unter {p95 * 1000:0} ms ({z.Count} Bilder)";
         }
 
         private void Log(string text)
@@ -41,86 +64,141 @@ namespace Staffel2.Game
             _protokoll?.WriteLine(zeile);
         }
 
+        private void Pruefe(bool ok, string was)
+        {
+            if (ok) _bestanden++; else _fehler++;
+            Log($"  {(ok ? "OK    " : "FEHLER")} {was}");
+        }
+
         private IEnumerator Ablauf()
         {
-            float start = Time.realtimeSinceStartup;
-            yield return Warte(3.5f);                       // Hauptmenü zeigen
-            var episode = _spiel.Daten.Episoden[0];
-            Log($"Starte Episode {episode.Ermittlung.Nr}: {episode.Ermittlung.Titel}");
-            _spiel.NeueEpisode(episode);
-            yield return BisZu(() => _spiel.Ansicht == Ansicht.Raum || _spiel.Sitzung?.Fehler != null, 180);
-            if (_spiel.Sitzung?.Fehler != null) { yield return Abbruch("Setup: " + _spiel.Sitzung.Fehler); yield break; }
-            Log($"Raum bereit nach {Time.realtimeSinceStartup - start:0.0} s (Linux {_spiel.Linux.StartDauer:0.0} s)");
-
-            yield return Warte(2f);
-            yield return GeheZu("terminal", 1.15f);
-            yield return Warte(1f);
-            _spiel.Zeige(Ansicht.Terminal);
-            yield return Warte(2.5f);
-
-            var s = _spiel.Sitzung;
-            yield return TippeUndPruefe("ls -l /srv/rechenwerk/uebung/kaffeekasse.csv /srv/rechenwerk/uebung/kaffeekasse.bak > ~/belege/kasse-meta.txt",
-                () => s.Zustand.BelegeErkannt.Contains("kasse-meta"));
-            yield return TippeUndPruefe("cat ~/belege/kasse-meta.txt", null);
-            yield return Warte(3f);
-
-            // Antwort in der Fallakte: wem gehört die Datei?
-            _spiel.Zeige(Ansicht.Fallakte);
-            yield return Warte(3f);
-            Log("Antwort: kaffee");
-            var antwort = s.AntwortenAsync("akte", "kaffee");
-            yield return BisZu(() => antwort.IsCompleted, 30);
-            yield return BisZu(() => s.AktuellerSchritt(s.Ermittlung.Spuren[0]) == null, 20);
-            yield return Warte(3f);
-
-            _spiel.Zeige(Ansicht.Terminal);
-            yield return Warte(1.5f);
-            yield return TippeUndPruefe("grep 2026-04-15 /srv/rechenwerk/uebung/kaffeekasse.csv > ~/belege/kasse-zeilen.txt && grep 2026-04-15 /srv/rechenwerk/uebung/kaffeekasse.bak >> ~/belege/kasse-zeilen.txt",
-                () => s.Zustand.BelegeErkannt.Contains("kasse-zeilen"));
-            yield return TippeUndPruefe("cp /srv/rechenwerk/uebung/kaffeekasse.bak /srv/rechenwerk/uebung/kaffeekasse.csv",
-                () => ErmittlungsFertig(s));
-            yield return Warte(3f);
-
-            // Speichern mitten im Fall, wie ein Spieler es über das Pause-Menü tut.
-            var speichern = _spiel.SpeichernAsync(true);
-            yield return BisZu(() => speichern.IsCompleted, 40);
-            Log($"Gespeichert: VM-Zustand {(File.Exists(_spiel.Ablage.VmPfad) ? new FileInfo(_spiel.Ablage.VmPfad).Length / 1024 / 1024 + " MiB" : "fehlt")}");
-
-            _spiel.Zeige(Ansicht.Fallakte);
-            yield return Warte(2.5f);
-            var taeter = s.Ermittlung.Vorwurf.TaeterId;
-            var belege = s.Ermittlung.Vorwurf.Belege.Select(b => b.Id).ToList();
-            Log($"Vorwurf gegen {taeter} mit {string.Join(", ", belege)}");
-            var vorwurf = s.VorwurfAsync(taeter, belege);
-            yield return BisZu(() => vorwurf.IsCompleted, 60);
-            Log("Vorwurf: " + vorwurf.Result);
-            yield return BisZu(() => _spiel.Ansicht == Ansicht.Abschluss, 20);
-            Erfolgreich = _spiel.Stand.Akte.ContainsKey(s.Ermittlung.Id);
-            Log(Erfolgreich ? "Episode gelöst und in der Akte gespeichert." : "Episode NICHT gelöst.");
-            yield return Warte(7f);
+            yield return Warte(_schnell ? 1f : 3.5f);
+            Log("Hauptmenü: " + Bildrate());
+            foreach (int nr in _episoden)
+            {
+                var episode = _spiel.Daten.Episoden.FirstOrDefault(e => e.Ermittlung.Nr == nr);
+                var plan = Durchspielplaene.Fuer(nr);
+                if (episode == null || plan == null) { Pruefe(false, $"Episode {nr} oder Plan fehlt"); continue; }
+                yield return Episode(episode, plan);
+            }
+            Log($"Ergebnis: {_bestanden} Prüfungen bestanden, {_fehler} fehlgeschlagen.");
             Ende();
         }
 
-        private static bool ErmittlungsFertig(Ermittlungssitzung s) => s.Ermittlung.Spuren.All(sp => s.AktuellerSchritt(sp) == null);
-
-        private IEnumerator TippeUndPruefe(string befehl, Func<bool> erreicht)
+        private IEnumerator Episode(Staffel2.Core.Episode episode, List<PlanSchritt> plan)
         {
-            Log("Tippe: " + befehl);
+            float start = Time.realtimeSinceStartup;
+            Log($"Episode {episode.Ermittlung.Nr}: {episode.Ermittlung.Titel}{(episode.Ermittlung.Bildschirm ? " (Bildschirm-Image)" : "")}");
+            var alte = _spiel.Sitzung;
+            void Mitschreiben(string text) => Log("    " + text);
+            _spiel.Protokoll += Mitschreiben;
+            _spiel.NeueEpisode(episode);
+            // Auf die NEUE Sitzung warten; Zustand der vorigen Episode zählt nicht.
+            yield return BisZu(() => _spiel.Sitzung != alte && (_spiel.Ansicht == Ansicht.Raum || _spiel.Sitzung?.Fehler != null) || _spiel.Linux.Phase == LinuxPhase.Fehler && _spiel.Sitzung != alte, 300);
+            var s = _spiel.Sitzung;
+            bool bereit = _spiel.Ansicht == Ansicht.Raum && s != null && s.Bereit;
+            Pruefe(bereit, $"Linux und Setup bereit nach {Time.realtimeSinceStartup - start:0.0} s (Linux-Start {_spiel.Linux.StartDauer:0.0} s){(bereit ? "" : ": " + (s?.Fehler ?? _spiel.Linux.FehlerText))}");
+            Log("  Laden: " + Bildrate());
+            if (!bereit) { _spiel.Protokoll -= Mitschreiben; yield break; }
+
+            yield return Warte(_schnell ? 0.5f : 2f);
+            yield return GeheZu("terminal", 1.15f);
+            Log("  Raum: " + Bildrate());
+
+            foreach (var schritt in plan)
+            {
+                switch (schritt.Art)
+                {
+                    case PlanArt.Terminal: _spiel.Zeige(Ansicht.Terminal); yield return Warte(_schnell ? 0.5f : 2f); break;
+                    case PlanArt.Fallakte: _spiel.Zeige(Ansicht.Fallakte); yield return Warte(_schnell ? 0.5f : 2.5f); break;
+                    case PlanArt.Raum: _spiel.Zeige(Ansicht.Raum); yield return Warte(1f); break;
+                    case PlanArt.Tippe: yield return Tippe(s, schritt); break;
+                    case PlanArt.Antwort:
+                    {
+                        var t = s.AntwortenAsync(schritt.SpurId, schritt.Text);
+                        yield return BisZu(() => t.IsCompleted, 30);
+                        yield return Erwarte(s, schritt);
+                        break;
+                    }
+                    case PlanArt.Vorwurf:
+                    {
+                        var belege = s.Ermittlung.Vorwurf.Belege.Select(b => b.Id).ToList();
+                        var t = s.VorwurfAsync(schritt.Text, belege);
+                        yield return BisZu(() => t.IsCompleted, 60);
+                        Log($"  Vorwurf gegen {schritt.Text}: {(t.IsCompleted ? t.Result?.ToString() : "keine Antwort")}");
+                        yield return Erwarte(s, schritt);
+                        break;
+                    }
+                    case PlanArt.Fortsetzen:
+                    {
+                        var vorher = s.Zustand;
+                        var belegeVorher = string.Join(",", vorher.BelegeErkannt.OrderBy(x => x));
+                        _spiel.ZumHauptmenue();
+                        yield return BisZu(() => _spiel.Ansicht == Ansicht.Menue && _spiel.Sitzung == null, 60);
+                        Pruefe(_spiel.KannFortsetzen, "Hauptmenü bietet Fortsetzen an");
+                        yield return Warte(_schnell ? 0.5f : 2f);
+                        _spiel.Fortsetzen();
+                        yield return BisZu(() => _spiel.Sitzung != null && _spiel.Sitzung != s && _spiel.Ansicht == Ansicht.Raum, 120);
+                        s = _spiel.Sitzung;
+                        if (s == null) { Pruefe(false, "Fortsetzen: keine Sitzung"); yield break; }
+                        Pruefe(string.Join(",", s.Zustand.BelegeErkannt.OrderBy(x => x)) == belegeVorher && s.Pager.Count > 0, $"Zustand nach Fortsetzen (Belege {belegeVorher}, Pager {s.Pager.Count})");
+                        // Frische Prüfung in der fortgesetzten VM: Belege müssen als Dateien noch da sein.
+                        s.StandPruefen();
+                        yield return Warte(_schnell ? 6f : 8f);
+                        Pruefe(string.Join(",", s.Zustand.BelegeErkannt.OrderBy(x => x)) == belegeVorher, "Belegdateien in der fortgesetzten VM vorhanden");
+                        _spiel.Zeige(Ansicht.Terminal);
+                        yield return Warte(_schnell ? 0.5f : 2f);
+                        break;
+                    }
+                    case PlanArt.Speichern:
+                    {
+                        var t = _spiel.SpeichernAsync(true);
+                        yield return BisZu(() => t.IsCompleted, 60);
+                        bool vm = File.Exists(_spiel.Ablage.VmPfad);
+                        Pruefe(vm && _spiel.Stand.Laufend != null, $"Speichern mit VM-Zustand ({(vm ? new FileInfo(_spiel.Ablage.VmPfad).Length / 1024 / 1024 + " MiB" : "fehlt")})");
+                        break;
+                    }
+                }
+            }
+            Log("  Ermittlung: " + Bildrate());
+            yield return BisZu(() => _spiel.Ansicht == Ansicht.Abschluss, 20);
+            Pruefe(_spiel.Stand.Akte.ContainsKey(episode.Ermittlung.Id), $"Episode {episode.Ermittlung.Nr} gelöst und in der Akte, Dauer {Time.realtimeSinceStartup - start:0} s Echtzeit");
+            _spiel.Protokoll -= Mitschreiben;
+            yield return Warte(_schnell ? 1.5f : 7f);
+        }
+
+        private IEnumerator Tippe(Ermittlungssitzung s, PlanSchritt schritt)
+        {
+            Log("  Tippe: " + schritt.Text);
             var linux = _spiel.Linux;
-            foreach (char c in befehl)
+            if (_schnell)
             {
-                linux.Tippe(System.Text.Encoding.UTF8.GetBytes(c.ToString()));
-                yield return Warte(1f / ZeichenProSekunde * UnityEngine.Random.Range(0.6f, 1.4f));
+                linux.Tippe(System.Text.Encoding.UTF8.GetBytes(schritt.Text));
             }
-            yield return Warte(0.4f);
+            else
+            {
+                foreach (char c in schritt.Text)
+                {
+                    linux.Tippe(System.Text.Encoding.UTF8.GetBytes(c.ToString()));
+                    yield return Warte(1f / 22f * UnityEngine.Random.Range(0.6f, 1.4f));
+                }
+                yield return Warte(0.4f);
+            }
             linux.Tippe(new byte[] { (byte)'\r' });
-            if (erreicht != null)
-            {
-                float t0 = Time.realtimeSinceStartup;
-                yield return BisZu(erreicht, 60);
-                Log(erreicht() ? $"  Prüfung bestanden nach {Time.realtimeSinceStartup - t0:0.0} s" : "  Prüfung NICHT bestanden");
-            }
-            yield return Warte(2.5f);
+            if (schritt.Erwartung != null) yield return Erwarte(s, schritt);
+            else yield return Warte(_schnell ? 1.5f : 3f);
+        }
+
+        private IEnumerator Erwarte(Ermittlungssitzung s, PlanSchritt schritt)
+        {
+            float t0 = Time.realtimeSinceStartup;
+            yield return BisZu(() => schritt.Erwartung(s), schritt.MaxSekunden);
+            // Gegenproben erwarten, dass etwas NICHT eintritt: kurz nachwarten, ob es stabil bleibt.
+            if (schritt.Beschreibung != null && schritt.Beschreibung.StartsWith("Gegenprobe")) yield return Warte(1f);
+            bool ok = schritt.Erwartung(s);
+            Pruefe(ok, $"{schritt.Beschreibung} ({Time.realtimeSinceStartup - t0:0.0} s)");
+            if (!ok) Log("    Letzte Pager-Meldung: " + string.Join(" ", s.Pager.LastOrDefault()?.Zeilen ?? new List<string>()));
+            yield return Warte(_schnell ? 0.5f : 2.5f);
         }
 
         /// <summary>Spieler gleichmäßig vor ein Interactable führen und es anschauen.</summary>
@@ -140,7 +218,7 @@ namespace Staffel2.Game
             Quaternion vonRot = spieler.transform.rotation;
             Vector3 blick = zielPunkt - stand; blick.y = 0;
             Quaternion zuRot = Quaternion.LookRotation(blick);
-            float dauer = Mathf.Clamp(Vector3.Distance(von, stand) / 1.6f, 1.5f, 6f);
+            float dauer = _schnell ? 0.5f : Mathf.Clamp(Vector3.Distance(von, stand) / 1.6f, 1.5f, 6f);
             Quaternion camVon = cam.transform.localRotation;
             float neigung = -Mathf.Atan2(zielPunkt.y - (stand.y + cam.transform.localPosition.y), abstand) * Mathf.Rad2Deg;
             Quaternion camZu = Quaternion.Euler(Mathf.Clamp(neigung, -30, 30), 0, 0);
@@ -152,19 +230,14 @@ namespace Staffel2.Game
                 cam.transform.localRotation = Quaternion.Slerp(camVon, camZu, k);
                 yield return null;
             }
+            spieler.transform.SetPositionAndRotation(stand, zuRot);
+            cam.transform.localRotation = camZu;
             if (cc != null) cc.enabled = true;
-        }
-
-        private IEnumerator Abbruch(string grund)
-        {
-            Log("ABBRUCH: " + grund);
-            yield return Warte(3f);
-            Ende();
         }
 
         private void Ende()
         {
-            Log($"Ende. Bilder: {_aufnahme?.Bilder ?? 0}");
+            Log($"Ende. {(Erfolgreich ? "ERFOLGREICH" : "MIT FEHLERN")}. Bilder: {_aufnahme?.Bilder ?? 0}");
             _aufnahme?.Stoppen();
             _protokoll?.Dispose();
             Fertig = true;

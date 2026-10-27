@@ -35,6 +35,15 @@ namespace Staffel2.Linux
         private Process _process;
         private StreamWriter _stdin;
 
+        private static readonly Newtonsoft.Json.JsonSerializerSettings AsciiJson = new Newtonsoft.Json.JsonSerializerSettings
+        {
+            StringEscapeHandling = Newtonsoft.Json.StringEscapeHandling.EscapeNonAscii,
+            Formatting = Newtonsoft.Json.Formatting.None,
+        };
+
+        /// <summary>Eine Protokollzeile an den Host: kompaktes JSON, nur ASCII.</summary>
+        public static string Kodiere(JObject message) => Newtonsoft.Json.JsonConvert.SerializeObject(message, AsciiJson);
+
         public bool Running => _process != null && !_process.HasExited;
         public int? ProcessId => _process?.Id;
 
@@ -109,7 +118,8 @@ namespace Staffel2.Linux
             if (!Running) return;
             lock (_writeLock)
             {
-                try { _stdin.WriteLine(message.ToString(Newtonsoft.Json.Formatting.None)); }
+                // Nicht-ASCII (z. B. „–“ im Spielstandpfad) als \uXXXX: unabhängig von der Kodierung von stdin.
+                try { _stdin.WriteLine(Kodiere(message)); }
                 catch (IOException) { /* Prozess beendet; Exit-Ereignis folgt */ }
                 catch (ObjectDisposedException) { }
             }

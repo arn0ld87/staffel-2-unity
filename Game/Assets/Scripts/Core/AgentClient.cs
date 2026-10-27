@@ -28,7 +28,7 @@ namespace Staffel2.Core
     public sealed class AgentClient : IAgentRunner
     {
         /// <summary>Obergrenze der Laufzeit im Gast in Sekunden.</summary>
-        public const int MaxGuestSeconds = 55;
+        public const int MaxGuestSeconds = 55;  // wie TIMEOUT_SECONDS im mission-agent des Images
 
         private sealed class Pending
         {

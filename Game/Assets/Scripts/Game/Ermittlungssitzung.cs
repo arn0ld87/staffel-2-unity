@@ -48,7 +48,8 @@ namespace Staffel2.Game
         public const string AntwortFehlerHinweis = "Die Antwort konnte gerade nicht geprüft werden. Versuch es gleich noch einmal.";
         public const string BelegUngueltig = "Ein ausgewählter Beleg ist nicht mehr gültig. Aktualisiere die Aktenwand.";
         public const string VorwurfFehler = "Belege konnten gerade nicht geprüft werden. Bitte erneut versuchen.";
-        private const int SetupTimeoutMs = 60_000;
+        // Großzügig: Unter Last braucht der erste Dateizugriff über 9p deutlich länger als im Browser.
+        private const int SetupTimeoutMs = 180_000;
 
         private static readonly HashSet<string> MissionBefehle = new HashSet<string> { "status", "hint", "check", "solve", "flag", "next", "reset" };
 
@@ -69,6 +70,18 @@ namespace Staffel2.Game
         public event Action<ErmittlungsEreignis> EreignisEingetreten;
         /// <summary>Fall gelöst: Akte-Eintrag bereit zum Speichern.</summary>
         public event Action<AkteEintrag> Geloest;
+        /// <summary>Diagnose für Konsole und Testprotokoll (Ausnahmen, Setup-Dauer).</summary>
+        public event Action<string> Protokoll;
+
+        // Rückrufe des Prüflaufs kommen von Hintergrundthreads; UI, Audio und 3D dürfen nur
+        // auf dem Hauptthread laufen. Ohne Kontext (Tests) wird direkt aufgerufen.
+        private readonly System.Threading.SynchronizationContext _kontext = System.Threading.SynchronizationContext.Current;
+
+        private void AufHauptthread(Action aktion)
+        {
+            if (_kontext == null || System.Threading.SynchronizationContext.Current == _kontext) aktion();
+            else _kontext.Post(_ => aktion(), null);
+        }
 
         private readonly ErmittlungsRun _run = new ErmittlungsRun();
         private readonly Func<long> _jetztMs;
@@ -106,15 +119,24 @@ namespace Staffel2.Game
             {
                 try
                 {
-                    foreach (var skript in new[] { Episode.RahmenSetup, Episode.EinsatzrahmenSetup, Ermittlung.Setup })
+                    var namen = new[] { "Rahmen", "Einsatzrahmen", "Episode" };
+                    var skripte = new[] { Episode.RahmenSetup, Episode.EinsatzrahmenSetup, Ermittlung.Setup };
+                    for (int i = 0; i < skripte.Length; i++)
                     {
-                        var res = await _run.RunAsync(client, skript, SetupTimeoutMs, IstAktuell);
+                        long t0 = _jetztMs();
+                        var res = await LangerLaufAsync(client, skripte[i], namen[i].ToLowerInvariant(), SetupTimeoutMs, IstAktuell);
                         if (!IstAktuell()) return;
-                        if (res.ExitCode != 0) throw new AgentException(RahmenFehler);
+                        Protokoll?.Invoke($"Setup {namen[i]}: exit {res.ExitCode} nach {(_jetztMs() - t0) / 1000.0:0.0} s");
+                        if (res.ExitCode != 0)
+                        {
+                            Protokoll?.Invoke($"Setup {namen[i]} Ausgabe: {Kuerzen(res.Output, 600)}");
+                            throw new AgentException(RahmenFehler);
+                        }
                     }
                 }
-                catch (Exception)
+                catch (Exception e)
                 {
+                    Protokoll?.Invoke("Setup fehlgeschlagen: " + e.GetType().Name + ": " + e.Message);
                     if (IstAktuell()) { Fehler = RahmenFehler; Geaendert?.Invoke(); }
                     return;
                 }
@@ -145,8 +167,12 @@ namespace Staffel2.Game
                 Ermittlung = Ermittlung,
                 Run = (skript, timeoutMs) => _run.RunAsync(client, skript, timeoutMs, IstAktuell),
                 LeseZustand = () => Zustand,
-                SchreibeZustand = (neu, ereignisse) => { if (IstAktuell()) SchreibeZustand(neu, ereignisse); },
-                MeldeFehler = _ => { if (IstAktuell()) { PruefHinweisText = PruefHinweis; Geaendert?.Invoke(); } },
+                SchreibeZustand = (neu, ereignisse) => AufHauptthread(() => { if (IstAktuell()) SchreibeZustand(neu, ereignisse); }),
+                MeldeFehler = f => AufHauptthread(() =>
+                {
+                    Protokoll?.Invoke($"Prüflauf: {f.Art}: {f.Meldung}");
+                    if (IstAktuell()) { PruefHinweisText = PruefHinweis; Geaendert?.Invoke(); }
+                }),
             });
             Bereit = true;
             if (_promptAusstehend)
@@ -202,8 +228,9 @@ namespace Staffel2.Game
                 if (neu.Ereignisse.Count > 0) SchreibeZustand(neu.Zustand, neu.Ereignisse);
                 else if (!richtig) Melde("auftrag", new[] { Satz(AntwortFalschHinweis) });
             }
-            catch (Exception)
+            catch (Exception e)
             {
+                Protokoll?.Invoke("Antwort: " + e.GetType().Name + ": " + e.Message);
                 if (version == _version) Melde("auftrag", new[] { Satz(AntwortFehlerHinweis) });
             }
             finally
@@ -246,8 +273,9 @@ namespace Staffel2.Game
                 if (!warGeloest && Zustand.Geloest) Abschliessen();
                 return auswertung.Ergebnis;
             }
-            catch (Exception)
+            catch (Exception e)
             {
+                Protokoll?.Invoke("Vorwurf: " + e.GetType().Name + ": " + e.Message);
                 if (version == _version) Melde("auftrag", new[] { Satz(VorwurfFehler) });
                 return null;
             }
@@ -341,6 +369,47 @@ namespace Staffel2.Game
             NeueNachricht?.Invoke(n);
             Geaendert?.Invoke();
         }
+
+        /// <summary>
+        /// Lange Skripte (Setups) laufen im Gast losgelöst im Hintergrund, denn der mission-agent
+        /// begrenzt jeden Lauf auf 55 s. Kurze Abfragen holen den Exit-Code, bis er da ist.
+        /// </summary>
+        private async Task<AgentResult> LangerLaufAsync(IAgentRunner client, string skript, string name, int timeoutMs, Func<bool> istAktuell)
+        {
+            string b64 = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(skript));
+            string d = "/run/s2-lauf";
+            string start =
+                $"mkdir -p {d} && rm -f {d}/{name}.rc {d}/{name}.log && printf '%s' '{b64}' | base64 -d > {d}/{name}.sh && " +
+                $"setsid sh -c 'bash {d}/{name}.sh > {d}/{name}.log 2>&1; echo $? > {d}/{name}.rc.tmp; mv {d}/{name}.rc.tmp {d}/{name}.rc' </dev/null >/dev/null 2>&1 &";
+            var gestartet = await _run.RunAsync(client, start, 50_000, istAktuell);
+            if (gestartet.ExitCode != 0) return gestartet;
+            long ende = _jetztMs() + timeoutMs;
+            while (_jetztMs() < ende)
+            {
+                await Task.Delay(2000);
+                if (!istAktuell()) throw new VeralteterAuftragException();
+                AgentResult abfrage;
+                try
+                {
+                    abfrage = await _run.RunAsync(client, $"[ -f {d}/{name}.rc ] && {{ cat {d}/{name}.rc; tail -c 2000 {d}/{name}.log; }} || echo laeuft", 30_000, istAktuell);
+                }
+                catch (VeralteterAuftragException) { throw; }
+                catch (Exception e)
+                {
+                    // Unter Last antwortet der Gast verspätet; nur die Gesamtfrist zählt.
+                    Protokoll?.Invoke($"Setup {name}: Abfrage verzögert ({e.GetType().Name})");
+                    continue;
+                }
+                var text = (abfrage.Output ?? "").Trim();
+                if (text.StartsWith("laeuft")) continue;
+                var zeilen = text.Split(new[] { '\n' }, 2);
+                int rc = int.TryParse(zeilen[0].Trim(), out var n) ? n : 1;
+                return new AgentResult { ExitCode = rc, Output = zeilen.Length > 1 ? zeilen[1] : "" };
+            }
+            throw new TimeoutException($"Setup {name} nicht nach {timeoutMs / 1000} s fertig");
+        }
+
+        private static string Kuerzen(string s, int max) => string.IsNullOrEmpty(s) ? "" : s.Length <= max ? s : s.Substring(s.Length - max);
 
         /// <summary>Wie satz() der Webversion: Punkt am Ende, ohne doppelte Satzzeichen.</summary>
         public static string Satz(string text)

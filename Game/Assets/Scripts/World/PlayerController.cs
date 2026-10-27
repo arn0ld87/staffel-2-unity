@@ -102,7 +102,8 @@ namespace Staffel2.World
             if (_controller.isGrounded && _verticalSpeed < 0f) _verticalSpeed = -2f;
             else _verticalSpeed -= Gravity * Time.deltaTime;
 
-            _controller.Move((_horizontalVelocity + Vector3.up * _verticalSpeed) * Time.deltaTime);
+            // Ein abgeschalteter Controller (z. B. während einer geführten Kamerafahrt) wird nicht bewegt.
+            if (_controller.enabled) _controller.Move((_horizontalVelocity + Vector3.up * _verticalSpeed) * Time.deltaTime);
 
             UpdateCamera();
         }

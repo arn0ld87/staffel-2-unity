@@ -34,6 +34,8 @@ namespace Staffel2.Game
         public string LadeText { get; private set; }
 
         public event Action AnsichtGeaendert;
+        /// <summary>Diagnosezeilen der laufenden Ermittlung (Testprotokoll).</summary>
+        public event Action<string> Protokoll;
 
         private PlayerController _spieler;
         private PlayerInteractor _interaktor;
@@ -47,7 +49,8 @@ namespace Staffel2.Game
         private void Awake()
         {
             Instanz = this;
-            Application.targetFrameRate = -1;
+            // Im Editor bremsen, damit die emulierte VM genug Rechenzeit behält; im Player regelt VSync.
+            Application.targetFrameRate = Application.isEditor ? 60 : -1;
             // -spielstand <ordner> trennt Testläufe vom echten Spielstand.
             var argv = Environment.GetCommandLineArgs();
             int si = Array.IndexOf(argv, "-spielstand");
@@ -83,7 +86,16 @@ namespace Staffel2.Game
             var args = Environment.GetCommandLineArgs();
             string Wert(string name) { int i = Array.IndexOf(args, name); return i >= 0 && i + 1 < args.Length ? args[i + 1] : null; }
             if (!args.Contains("-demo")) return;
-            gameObject.AddComponent<DemoRegie>().Starten(this, Wert("-aufnahme"), Wert("-protokoll"));
+            var episoden = (Wert("-episoden") ?? "0").Split(',').Select(x => int.TryParse(x, out var n) ? n : -1).Where(n => n >= 0);
+            StarteDemo(Wert("-aufnahme"), Wert("-protokoll"), episoden, args.Contains("-schnell"));
+        }
+
+        /// <summary>Automatischer Durchlauf (auch aus Tests und dem Editor aufrufbar).</summary>
+        public DemoRegie StarteDemo(string aufnahme, string protokoll, System.Collections.Generic.IEnumerable<int> episoden, bool schnell)
+        {
+            var regie = gameObject.AddComponent<DemoRegie>();
+            regie.Starten(this, aufnahme, protokoll, episoden, schnell);
+            return regie;
         }
 
         private void Update()
@@ -191,6 +203,7 @@ namespace Staffel2.Game
             var sitzung = new Ermittlungssitzung(episode, () => (long)(Time.realtimeSinceStartupAsDouble * 1000));
             Sitzung = sitzung;
             sitzung.Geaendert += RaumAnzeigenAktualisieren;
+            sitzung.Protokoll += text => { Debug.Log("Ermittlung: " + text); Protokoll?.Invoke(text); };
             sitzung.NeueNachricht += n => { _audio.Pager(n.Art); _ui.Hud.Pager(n); };
             sitzung.EreignisEingetreten += e =>
             {
@@ -232,9 +245,25 @@ namespace Staffel2.Game
         }
 
         /// <summary>Spielstand mit VM-Zustand sichern. Ohne laufende Episode nur die Akte.</summary>
-        public async Task SpeichernAsync(bool meldung)
+        public Task SpeichernAsync(bool meldung)
         {
-            if (_speichertGerade) return;
+            // Läuft schon ein Speichern, danach genau eins anhängen: der Stand ist dann aktuell.
+            var vorher = _speichern ?? Task.CompletedTask;
+            if (_speichernWartet != null) return _speichernWartet;
+            var neu = SpeichernNachAsync(vorher, meldung);
+            _speichernWartet = neu;
+            _speichern = neu;
+            return neu;
+        }
+
+        private Task _speichern, _speichernWartet;
+
+        private async Task SpeichernNachAsync(Task vorher, bool meldung)
+        {
+            // Erst zurückgeben, damit SpeichernAsync _speichernWartet setzt, bevor es hier gelöscht wird.
+            await Task.Yield();
+            try { await vorher; } catch { }
+            _speichernWartet = null;
             _speichertGerade = true;
             try
             {

@@ -1,0 +1,49 @@
+[   12.3 s] Demo: Episoden 2,0, schnell, 1968×1178, Apple M3, Qualität PC
+[   13.0 s] Hauptmenü: 59 fps im Mittel, 95 % der Bilder unter 22 ms (40 Bilder)
+[   13.0 s] Episode 2: Der Prozess, der nicht stirbt (Bildschirm-Image)
+[   52.9 s]     Setup Rahmen: exit 0 nach 34.6 s
+[   66.6 s]     Setup Einsatzrahmen: exit 0 nach 13.7 s
+[  115.0 s]     Setup Episode: exit 0 nach 48.3 s
+[  115.0 s]   OK     Linux und Setup bereit nach 102.1 s (Linux-Start 5.3 s)
+[  115.0 s]   Laden: 59 fps im Mittel, 95 % der Bilder unter 22 ms (5979 Bilder)
+[  116.0 s]   Raum: 60 fps im Mittel, 95 % der Bilder unter 21 ms (59 Bilder)
+[  116.6 s]   Tippe: ps | grep -E 'rw-abgleich|crond' > ~/belege/prozess-zeile.txt
+[  123.7 s]   OK     ps | grep -E 'rw-abgleich|crond' > ~/belege/prozess-zeile.txt (7.1 s)
+[  124.2 s]   Tippe: sudo pkill -x rw-abgleich
+[  132.3 s]   OK     Gegenprobe: nur beenden, Cron startet neu (8.1 s)
+[  132.8 s]   Tippe: sudo crontab -u abgleich -r; sudo pkill -x rw-abgleich
+[  136.2 s]   OK     sudo crontab -u abgleich -r; sudo pkill -x rw-abgleich (3.3 s)
+[  142.7 s]   OK     Gegenprobe: falsche Kennung (1.0 s)
+[  144.2 s]   OK     Antwort RW-2122 (0.0 s)
+[  146.8 s]   Tippe: grep 'change=RW-2122 ' /var/log/rechenwerk-wartung.log > ~/belege/wartung-zeile.txt
+[  162.9 s]   OK     grep 'change=RW-2122 ' /var/log/rechenwerk-wartung.log > ~/belege/wartung-zeile.txt (16.1 s)
+[  183.8 s]   FEHLER Speichern mit VM-Zustand (fehlt)
+[  190.8 s]   Vorwurf gegen timo: FalschePerson
+[  191.8 s]   OK     Gegenprobe: falsche Person (1.0 s)
+[  196.1 s]   Vorwurf gegen nadia: Richtig
+[  196.1 s]   OK     Vorwurf gegen nadia (0.0 s)
+[  196.6 s]   Ermittlung: 55 fps im Mittel, 95 % der Bilder unter 32 ms (4393 Bilder)
+[  197.9 s]   OK     Episode 2 gelöst und in der Akte, Dauer 185 s Echtzeit
+[  199.4 s] Episode 0: Probelauf
+[  227.1 s]     Setup Rahmen: exit 0 nach 24.2 s
+[  241.5 s]     Setup Einsatzrahmen: exit 0 nach 14.4 s
+[  254.5 s]     Setup Episode: exit 0 nach 13.0 s
+[  254.5 s]   OK     Linux und Setup bereit nach 55.1 s (Linux-Start 3.4 s)
+[  254.5 s]   Laden: 46 fps im Mittel, 95 % der Bilder unter 37 ms (2638 Bilder)
+[  255.6 s]   Raum: 46 fps im Mittel, 95 % der Bilder unter 38 ms (46 Bilder)
+[  256.1 s]   Tippe: ls -l /srv/rechenwerk/uebung/kaffeekasse.csv /srv/rechenwerk/uebung/kaffeekasse.bak > ~/belege/kasse-meta.txt
+[  258.5 s]   OK     ls -l /srv/rechenwerk/uebung/kaffeekasse.csv /srv/rechenwerk/uebung/kaffeekasse.bak > ~/belege/kasse-meta.txt (2.4 s)
+[  259.0 s]   Tippe: cat ~/belege/kasse-meta.txt
+[  263.7 s]   OK     Gegenprobe: falsche Antwort (1.0 s)
+[  265.1 s]   OK     Antwort kaffee (0.0 s)
+[  266.2 s]   Tippe: grep 2026-04-15 /srv/rechenwerk/uebung/kaffeekasse.csv > ~/belege/kasse-zeilen.txt && grep 2026-04-15 /srv/rechenwerk/uebung/kaffeekasse.bak >> ~/belege/kasse-zeilen.txt
+[  269.5 s]   OK     grep 2026-04-15 /srv/rechenwerk/uebung/kaffeekasse.csv > ~/belege/kasse-zeilen.txt && grep 2026-04-15 /srv/rechenwerk/uebung/kaffeekasse.bak >> ~/belege/kasse-zeilen.txt (3.4 s)
+[  270.0 s]   Tippe: cp /srv/rechenwerk/uebung/kaffeekasse.bak /srv/rechenwerk/uebung/kaffeekasse.csv
+[  274.3 s]   OK     cp /srv/rechenwerk/uebung/kaffeekasse.bak /srv/rechenwerk/uebung/kaffeekasse.csv (4.2 s)
+[  277.0 s]   FEHLER Speichern mit VM-Zustand (fehlt)
+[  279.1 s]   Vorwurf gegen kaffee: Richtig
+[  279.1 s]   OK     Vorwurf gegen kaffee (0.0 s)
+[  279.6 s]   Ermittlung: 47 fps im Mittel, 95 % der Bilder unter 35 ms (1131 Bilder)
+[  280.9 s]   OK     Episode 0 gelöst und in der Akte, Dauer 81 s Echtzeit
+[  282.4 s] Ergebnis: 18 Prüfungen bestanden, 2 fehlgeschlagen.
+[  282.4 s] Ende. MIT FEHLERN. Bilder: 0
