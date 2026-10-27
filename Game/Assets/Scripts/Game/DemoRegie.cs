@@ -171,6 +171,11 @@ namespace Staffel2.Game
         {
             Log("  Tippe: " + schritt.Text);
             var linux = _spiel.Linux;
+            // Auf langsamen Rechnern (Software-Rendering, ~1 fps) erst Terminal-Layout und stty
+            // für die neue Größe abwarten: gerenderte Bilder zählen, nicht nur Sekunden.
+            int bild0 = Time.frameCount;
+            float t0 = Time.realtimeSinceStartup;
+            yield return BisZu(() => Time.frameCount - bild0 >= 3 && Time.realtimeSinceStartup - t0 >= 0.3f, 15);
             if (_schnell)
             {
                 linux.Tippe(System.Text.Encoding.UTF8.GetBytes(schritt.Text));
@@ -197,7 +202,13 @@ namespace Staffel2.Game
             if (schritt.Beschreibung != null && schritt.Beschreibung.StartsWith("Gegenprobe")) yield return Warte(1f);
             bool ok = schritt.Erwartung(s);
             Pruefe(ok, $"{schritt.Beschreibung} ({Time.realtimeSinceStartup - t0:0.0} s)");
-            if (!ok) Log("    Letzte Pager-Meldung: " + string.Join(" ", s.Pager.LastOrDefault()?.Zeilen ?? new List<string>()));
+            if (!ok)
+            {
+                Log("    Letzte Pager-Meldung: " + string.Join(" ", s.Pager.LastOrDefault()?.Zeilen ?? new List<string>()));
+                var zeilen = (_spiel.Linux.Bildschirm?.Text() ?? "").TrimEnd().Split('\n');
+                Log("    Terminal (letzte Zeilen):");
+                foreach (var z in zeilen.Skip(Math.Max(0, zeilen.Length - 8))) Log("      | " + z.TrimEnd());
+            }
             yield return Warte(_schnell ? 0.5f : 2.5f);
         }
 
