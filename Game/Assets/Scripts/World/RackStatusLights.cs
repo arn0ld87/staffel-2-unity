@@ -4,7 +4,7 @@ namespace Staffel2.World
 {
     /// <summary>
     /// Statuslämpchen eines Racks. Der Zustand steht nicht nur in der Farbe, sondern auch im Muster:
-    /// Ruhe = ein schwaches blaues Lämpchen, Aktiv = cyanfarbenes Lauflicht, Warnung = alle blinken
+    /// Ruhe = jedes siebte Lämpchen schwach blau, Aktiv = cyanfarbenes Lauflicht (ein Durchlauf je Sekunde, bei wenigen Lämpchen 4 Schritte/s), Warnung = alle blinken
     /// bernsteinfarben (1,5 Hz), Erledigt = alle grün und dauerhaft an.
     /// Die LED-Materialien brauchen aktivierte Emission (URP Lit); gefärbt wird per MaterialPropertyBlock.
     /// </summary>
@@ -15,7 +15,7 @@ namespace Staffel2.World
 
         const float Helligkeit = 2.5f;
         const float BlinkHz = 1.5f;
-        const float LaufHz = 4f;
+        const float LaufMin = 4f;
 
         static readonly Color RuheFarbe = new Color(0.25f, 0.45f, 0.9f);
         static readonly Color AktivFarbe = new Color(0.25f, 0.85f, 1f);
@@ -68,10 +68,10 @@ namespace Staffel2.World
                 bool an;
                 switch (_state)
                 {
-                    case RackState.Aktiv: an = (int)(t * LaufHz) % n == i; break;
+                    case RackState.Aktiv: an = (int)(t * Mathf.Max(LaufMin, n)) % n == i; break;
                     case RackState.Warnung: an = (int)(t * BlinkHz * 2f) % 2 == 0; break;
                     case RackState.Erledigt: an = true; break;
-                    default: an = i == 0; break;
+                    default: an = i % 7 == 0; break;
                 }
 
                 if (!force && _an[i] == an) continue;

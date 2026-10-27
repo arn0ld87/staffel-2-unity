@@ -13,7 +13,7 @@
 | `MonitorScreen` | Leuchtende Monitorfläche mit großem TMP-Schriftzug | `SetLabel(string)`, `SetState(MonitorState)`, `State`; `MonitorState { Aus, Bereit, Aktiv, Fehler }` |
 | `FootstepAudio` | Schritte am Boden, Pitch 0,95–1,05 | `Clips[]`, `MixerGroup`, `StrideLength`, `Volume` |
 
-Muster der Rack-Zustände: Ruhe = ein schwaches blaues Lämpchen, Aktiv = cyanfarbenes Lauflicht, Warnung = alle blinken bernsteinfarben (1,5 Hz), Erledigt = alle grün, dauerhaft an.
+Muster der Rack-Zustände: Ruhe = jedes siebte Lämpchen schwach blau, Aktiv = cyanfarbenes Lauflicht, Warnung = alle blinken bernsteinfarben (1,5 Hz), Erledigt = alle grün, dauerhaft an.
 
 ## Szene bauen
 
@@ -23,3 +23,5 @@ Erzeugt `Assets/Scenes/Serverraum.unity` und die Materialien unter `Assets/Mater
 
 Interactable-Ids: `terminal`, `fallakte`, `serverschrank`, `pager`.
 Racks heißen `Rack_A1..4` und `Rack_B1..4` (`Rack_B1` = `Serverschrank`); das Monitorobjekt heißt `Monitorflaeche`.
+
+Am Rack sind alle LEDs (Kopfleiste und je Einschub zwei) an einer `RackStatusLights` registriert. Der Builder legt außerdem ein Global Volume (`Assets/Materials/World/ServerraumProfil.asset`: ACES, leichter Bloom, leichte Vignette) an und schaltet Post-Processing an der Kamera ein.
