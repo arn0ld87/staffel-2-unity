@@ -135,21 +135,32 @@ def build():
     dv = np.zeros_like(co); dv[:, 2] = -D * w_auf; dv[:, 1] = 0.3 * D * w_auf
     delta["Mund_Auf"] = dv
 
-    wzl = 1.0 - smooth((np.abs(s) - 0.025) / 0.03)
-    wc = smooth((np.abs(dx) - 0.3 * hw) / (0.7 * hw)) * wzl * (1.0 - smooth((np.abs(dx) - 1.1 * hw) / (0.7 * hw))) * gate
-    dv = np.zeros_like(co); dv[:, 0] = -np.sign(dx) * 0.014 * wc; dv[:, 1] = -0.004 * wc
+    wzl = 1.0 - smooth((np.abs(s) - 0.035) / 0.05)
+    wc = smooth((np.abs(dx) - 0.3 * hw) / (0.9 * hw)) * wzl * (1.0 - smooth((np.abs(dx) - 1.0 * hw) / (1.3 * hw))) * gate
+    dv = np.zeros_like(co); dv[:, 0] = -np.sign(dx) * 0.012 * wc; dv[:, 1] = -0.003 * wc
     delta["Mund_Schmal"] = dv
 
+    # Neutral: Mundlinie auf eine symmetrische Linie legen (Mitte = Ruhehöhe, Winkel 2 mm darunter)
+    zref = float(zl(xm))
     wxn = 1.0 - smooth((np.abs(dx) - hw) / (0.8 * hw))
     wzn = np.where(s > 0, 1.0 - smooth((s - 0.03) / 0.05), 1.0 - smooth((-s - 0.05) / 0.06))
     mm = wxn * wzn * gate
+    ztarget = zref - 0.002 * np.clip(np.abs(dx) / hw, 0.0, 1.0) ** 2
     dv = np.zeros_like(co)
-    dv[:, 2] = -0.75 * (zl(x) - float(zl(xm))) * mm                    # Lächelkurve abflachen
+    dv[:, 2] = (ztarget - zl(x)) * mm
     dv[:, 0] = -np.sign(dx) * 0.006 * smooth(np.abs(dx) / hw) * mm       # Mundwinkel nach innen
-    wzc = smooth(s / 0.02) * (1.0 - smooth((s - 0.05) / 0.04))
+    s0 = z - zref                                                        # Wangen symmetrisch zur Ruhelinie
+    wzc = smooth(s0 / 0.02) * (1.0 - smooth((s0 - 0.05) / 0.04))
     wcheek = smooth((np.abs(dx) - 0.5 * hw) / (0.5 * hw)) * (1.0 - smooth((np.abs(dx) - 1.4 * hw) / (0.6 * hw))) * wzc * gate
     dv[:, 2] -= 0.004 * wcheek                                           # Wangen entspannen
     dv[:, 1] += 0.002 * wcheek
+    # Messung: Mundwinkel-Vertices (nächste Front-Vertices an den Linienenden) vorher/nachher
+    for nm, xc in (("links(x<)", mouth["xmin"]), ("rechts(x>)", mouth["xmax"])):
+        d2 = (x - xc) ** 2 + (z - float(zl(xc))) ** 2 + np.where(y < ym + 0.08, 0.0, 1.0)
+        i = int(np.argmin(d2))
+        so = z[i] - float(zl(x[i]))   # Eigenabstand des Vertex zur Linie herausrechnen
+        print(f"[Neutral] Mundwinkel {nm}: Vertex-z vorher={z[i]:.4f} nachher={z[i] + dv[i, 2]:.4f}; "
+              f"Linienhöhe vorher={z[i] - so:.4f} nachher={z[i] + dv[i, 2] - so:.4f}")
     delta["Neutral"] = dv
 
     bust.shape_key_add(name="Basis", from_mix=False)
