@@ -41,7 +41,7 @@ namespace Staffel2.World.Editor
             var m = CreateMaterials();
 
             RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Flat;
-            RenderSettings.ambientLight = new Color(0.16f, 0.15f, 0.14f);
+            RenderSettings.ambientLight = new Color(0.30f, 0.28f, 0.25f);  // dunkel-warm, aber lesbar
             RenderSettings.skybox = null;
 
             var raum = new GameObject("Raum").transform;
@@ -363,11 +363,12 @@ namespace Staffel2.World.Editor
         static void BuildLights(Transform root)
         {
             var warm = new Color(1f, 0.80f, 0.58f);
-            AddLight(root, "Deckenlicht_Gang", LightType.Point, new Vector3(-1.1f, 2.9f, 2.0f), warm, 1.4f, 6f);
-            AddLight(root, "Deckenlicht_Mitte", LightType.Point, new Vector3(-1.0f, 3.0f, -1.5f), warm, 1.1f, 7f);
-            AddLight(root, "Aktenwand_Licht", LightType.Point, new Vector3(-3.8f, 2.7f, -0.5f), warm, 1.0f, 4.5f);
+            AddLight(root, "Deckenlicht_Gang", LightType.Point, new Vector3(-1.1f, 2.9f, 2.0f), warm, 3.2f, 7f);
+            AddLight(root, "Deckenlicht_Gang_Ost", LightType.Point, new Vector3(2.4f, 2.9f, 2.0f), warm, 2.6f, 6.5f);
+            AddLight(root, "Deckenlicht_Mitte", LightType.Point, new Vector3(-1.0f, 3.0f, -1.5f), warm, 2.6f, 8f);
+            AddLight(root, "Aktenwand_Licht", LightType.Point, new Vector3(-3.8f, 2.7f, -0.5f), warm, 2.4f, 5f);
 
-            var desk = AddLight(root, "Arbeitsplatz_Spot", LightType.Spot, new Vector3(3.0f, 2.9f, -1.8f), warm, 3.0f, 6f);
+            var desk = AddLight(root, "Arbeitsplatz_Spot", LightType.Spot, new Vector3(3.0f, 2.9f, -1.8f), warm, 6.0f, 7f);
             desk.transform.rotation = Quaternion.LookRotation(new Vector3(1.3f, -2.1f, 0f));
             desk.spotAngle = 85f;
 
