@@ -33,6 +33,7 @@ namespace Staffel2.Game
         public Ansicht Ansicht { get; private set; } = Ansicht.Menue;
         public AlexDialogStudio Alex { get; private set; }
         public string LadeText { get; private set; }
+        public float LadeStartZeit { get; private set; }
 
         public event Action AnsichtGeaendert;
         /// <summary>Diagnosezeilen der laufenden Ermittlung (Testprotokoll).</summary>
@@ -50,6 +51,8 @@ namespace Staffel2.Game
         private void Awake()
         {
             Instanz = this;
+            // Auch ohne Fensterfokus weiterlaufen (VM-Hintergrundbetrieb und Headless-/Xvfb-Tests).
+            Application.runInBackground = true;
             // Im Editor bremsen, damit die emulierte VM genug Rechenzeit behält; im Player regelt VSync.
             Application.targetFrameRate = Application.isEditor ? 60 : -1;
             // -spielstand <ordner> trennt Testläufe vom echten Spielstand.
@@ -58,6 +61,8 @@ namespace Staffel2.Game
             string ordner = si >= 0 && si + 1 < argv.Length ? argv[si + 1] : Path.Combine(Application.persistentDataPath, "spielstand");
             Ablage = new SpielstandAblage(ordner);
             Einstellungen = Ablage.LadeEinstellungen();
+            int fsi = Array.IndexOf(argv, "-screen-fullscreen");
+            if (fsi >= 0 && fsi + 1 < argv.Length) Einstellungen.Vollbild = argv[fsi + 1] != "0";
             Stand = Ablage.Laden(out var warnung);
             if (warnung != null) Debug.LogWarning(warnung);
             Daten = Staffel2Daten.Laden(File.ReadAllText(Path.Combine(Application.streamingAssetsPath, "staffel2", "staffel2.json")));
@@ -197,6 +202,7 @@ namespace Staffel2.Game
         private async Task StarteAsync(Episode episode, LaufendeErmittlung laufend)
         {
             Sitzung?.Beenden();
+            LadeStartZeit = Time.realtimeSinceStartup;
             LadeText = $"Episode {episode.Ermittlung.Nr}: {episode.Ermittlung.Titel}\nLinux startet …";
             Zeige(Ansicht.Laden);
             var image = episode.Ermittlung.Bildschirm ? LinuxImage.Bildschirm : LinuxImage.Terminal;
@@ -207,11 +213,25 @@ namespace Staffel2.Game
                 _ui.Lade.FehlerAnzeigen(true);
                 return;
             }
-            LadeText = laufend == null ? "Rechenwerk Ostwind GmbH · rw-srv01\nErmittlung wird vorbereitet …" : "Ermittlung wird fortgesetzt …";
+            string kopf = $"Rechenwerk Ostwind GmbH · {episode.Ermittlung.Hostname}";
+            LadeText = laufend == null
+                ? $"{kopf}\nErmittlung wird vorbereitet – Schritt 1 von 3 (Rahmen) …"
+                : "Ermittlung wird fortgesetzt …";
             var sitzung = new Ermittlungssitzung(episode, () => (long)(Time.realtimeSinceStartupAsDouble * 1000));
             Sitzung = sitzung;
             sitzung.Geaendert += RaumAnzeigenAktualisieren;
-            sitzung.Protokoll += text => { Debug.Log("Ermittlung: " + text); Protokoll?.Invoke(text); };
+            sitzung.Protokoll += text =>
+            {
+                Debug.Log("Ermittlung: " + text);
+                if (laufend == null && sitzung == Sitzung)
+                {
+                    if (text.StartsWith("Setup Rahmen:"))
+                        LadeText = $"{kopf}\nErmittlung wird vorbereitet – Schritt 2 von 3 (Einsatzrahmen) …";
+                    else if (text.StartsWith("Setup Einsatzrahmen:"))
+                        LadeText = $"{kopf}\nErmittlung wird vorbereitet – Schritt 3 von 3 (Episode) …";
+                }
+                Protokoll?.Invoke(text);
+            };
             sitzung.NeueNachricht += n => { _audio.Pager(n.Art); _ui.Hud.Pager(n); AlexReagiert(n); };
             sitzung.EreignisEingetreten += e =>
             {

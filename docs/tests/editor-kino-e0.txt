@@ -1,0 +1,16 @@
+[   15.6 s] Demo: Episoden 0, kino, 1976×1178, Apple M3, Qualität PC
+[   18.8 s] Hauptmenü: 56 fps im Mittel, 95 % der Bilder unter 24 ms (179 Bilder)
+[   18.8 s]   Menü: Befehlsübersicht und Einstellungen
+[   36.6 s] Episode 0: Probelauf
+[   42.1 s]     Setup Rahmen: exit 0 nach 4.5 s
+[   46.1 s]     Setup Einsatzrahmen: exit 0 nach 4.0 s
+[   49.3 s]     Setup Episode: exit 0 nach 3.2 s
+[   49.4 s]   OK     Linux und Setup bereit nach 12.8 s (Linux-Start 0.8 s)
+[   49.4 s]   Laden: 59 fps im Mittel, 95 % der Bilder unter 22 ms (1800 Bilder)
+[   51.4 s]   Rundgang durch den Serverraum
+[   90.6 s]   Raum: 60 fps im Mittel, 95 % der Bilder unter 22 ms (2451 Bilder)
+[   92.6 s]   Tippe: ls -l /srv/rechenwerk/uebung
+[  103.2 s]   Tippe: grpe 2026-04-15 /srv/rechenwerk/uebung/kaffeekasse.csv
+[  116.2 s]   Tippe: ls -l /srv/rechenwerk/uebung/kaffeekasse.csv /srv/rechenwerk/uebung/kaffeekasse.bak > ~/belege/kasse-meta.txt
+[  134.9 s]   OK     ls -l /srv/rechenwerk/uebung/kaffeekasse.csv /srv/rechenwerk/uebung/kaffeekasse.bak > ~/belege/kasse-meta.txt (0.6 s)
+[  138.4 s]   Tippe: cat ~/belege/kasse-meta.txt

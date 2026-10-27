@@ -43,7 +43,7 @@ namespace Staffel2.World.Editor
             var m = CreateMaterials();
 
             RenderSettings.ambientMode = AmbientMode.Flat;
-            RenderSettings.ambientLight = new Color(0.30f, 0.28f, 0.25f);  // dunkel-warm, aber lesbar
+            RenderSettings.ambientLight = new Color(0.46f, 0.43f, 0.39f);  // dunkel-warm, im Linear-Farbraum klar lesbar
             RenderSettings.skybox = null;
 
             var raum = new GameObject("Raum").transform;
@@ -81,18 +81,18 @@ namespace Staffel2.World.Editor
         {
             return new Mats
             {
-                Wand = Mat("Wand", Hex("20231e"), 0.15f),
-                WandPaneel = Mat("WandPaneel", Hex("2a2d26"), 0.2f),
-                WandFuge = Mat("WandFuge", Hex("12140f"), 0.1f),
-                Boden = Mat("Boden", Hex("2a2620"), 0.3f),
-                Fuge = Mat("BodenFuge", Hex("0e0d0b"), 0.1f),
-                Gitter = Mat("BodenGitter", Hex("141311"), 0.4f),
-                Decke = Mat("Decke", Hex("171914"), 0.1f),
-                Rack = Mat("Rack", Hex("1b1a18"), 0.4f),
-                RackFront = Mat("RackFront", Hex("272520"), 0.35f),
-                EinschubA = Mat("EinschubA", Hex("181817"), 0.5f),
-                EinschubB = Mat("EinschubB", Hex("22211e"), 0.5f),
-                EinschubC = Mat("EinschubC", Hex("2d2b27"), 0.5f),
+                Wand = Mat("Wand", Hex("383c34"), 0.18f),
+                WandPaneel = Mat("WandPaneel", Hex("464a40"), 0.22f),
+                WandFuge = Mat("WandFuge", Hex("1c1f19"), 0.1f),
+                Boden = Mat("Boden", Hex("423d35"), 0.3f),
+                Fuge = Mat("BodenFuge", Hex("181613"), 0.1f),
+                Gitter = Mat("BodenGitter", Hex("22201d"), 0.4f),
+                Decke = Mat("Decke", Hex("2b2e26"), 0.1f),
+                Rack = Mat("Rack", Hex("2a2926"), 0.4f),
+                RackFront = Mat("RackFront", Hex("3b3831"), 0.35f),
+                EinschubA = Mat("EinschubA", Hex("262624"), 0.5f),
+                EinschubB = Mat("EinschubB", Hex("33312d"), 0.5f),
+                EinschubC = Mat("EinschubC", Hex("403d37"), 0.5f),
                 Lueftung = Mat("Lueftung", Hex("080807"), 0.2f),
                 Griff = Mat("Griff", Hex("57534c"), 0.6f),
                 Led = Mat("Led", Hex("0d0d0d"), 0.6f),
@@ -533,17 +533,17 @@ namespace Staffel2.World.Editor
 
         static void BuildLights(Transform root, Mats m)
         {
-            var warm = new Color(1f, 0.80f, 0.58f);
-            AddLight(root, "Deckenlicht_Gang", LightType.Point, new Vector3(-1.1f, 2.9f, 2.0f), warm, 3.2f, 7f);
-            AddLight(root, "Deckenlicht_Gang_Ost", LightType.Point, new Vector3(2.4f, 2.9f, 2.0f), warm, 2.6f, 6.5f);
-            AddLight(root, "Deckenlicht_Mitte", LightType.Point, new Vector3(-1.0f, 3.0f, -1.5f), warm, 2.6f, 8f);
-            AddLight(root, "Aktenwand_Licht", LightType.Point, new Vector3(-3.8f, 2.7f, -0.5f), warm, 2.4f, 5f);
+            var warm = new Color(1f, 0.82f, 0.62f);
+            AddLight(root, "Deckenlicht_Gang", LightType.Point, new Vector3(-1.1f, 2.9f, 2.0f), warm, 4.8f, 9f);
+            AddLight(root, "Deckenlicht_Gang_Ost", LightType.Point, new Vector3(2.4f, 2.9f, 2.0f), warm, 4.0f, 8.5f);
+            AddLight(root, "Deckenlicht_Mitte", LightType.Point, new Vector3(-1.0f, 3.0f, -1.5f), warm, 4.2f, 9.5f);
+            AddLight(root, "Aktenwand_Licht", LightType.Point, new Vector3(-3.8f, 2.7f, -0.5f), warm, 3.8f, 6.5f);
 
-            var desk = AddLight(root, "Arbeitsplatz_Spot", LightType.Spot, new Vector3(3.0f, 2.9f, -1.8f), warm, 6.0f, 7f);
+            var desk = AddLight(root, "Arbeitsplatz_Spot", LightType.Spot, new Vector3(3.0f, 2.9f, -1.8f), warm, 7.5f, 8f);
             desk.transform.rotation = Quaternion.LookRotation(new Vector3(1.3f, -2.1f, 0f));
-            desk.spotAngle = 85f;
+            desk.spotAngle = 88f;
 
-            AddLight(root, "Akzent_Orange", LightType.Point, new Vector3(-4.0f, 2.4f, -3.4f), Hex("db4a26"), 1.6f, 3.5f);
+            AddLight(root, "Akzent_Orange", LightType.Point, new Vector3(-4.0f, 2.4f, -3.4f), Hex("db4a26"), 2.2f, 4.5f);
 
             // Sichtbare Leuchtkörper an der Decke über den Punktlichtern.
             Deckenleuchte(root, m, -1.1f, 2.0f, 0.9f, 0.35f);
@@ -598,11 +598,11 @@ namespace Staffel2.World.Editor
             bloom.intensity.Override(0.3f);
             bloom.scatter.Override(0.6f);
             var vignette = profile.Add<Vignette>(true);
-            vignette.intensity.Override(0.18f);
+            vignette.intensity.Override(0.14f);
             vignette.smoothness.Override(0.4f);
             // ACES dunkelt stark ab; Belichtung und etwas Kontrast heben, damit der Raum lesbar bleibt.
             var farbe = profile.Add<ColorAdjustments>(true);
-            farbe.postExposure.Override(1.3f);
+            farbe.postExposure.Override(1.75f);
             farbe.contrast.Override(8f);
             farbe.saturation.Override(6f);
 
@@ -747,6 +747,16 @@ namespace Staffel2.World.Editor
 
         static void UpdateBuildSettings()
         {
+            PlayerSettings.runInBackground = true;
+            foreach (var rpPath in new[] { "Assets/Settings/PC_RPAsset.asset", "Assets/Settings/Mobile_RPAsset.asset" })
+            {
+                var rp = AssetDatabase.LoadAssetAtPath<UniversalRenderPipelineAsset>(rpPath);
+                if (rp != null && rp.maxAdditionalLightsCount < 8)
+                {
+                    rp.maxAdditionalLightsCount = 8;
+                    EditorUtility.SetDirty(rp);
+                }
+            }
             var list = new List<EditorBuildSettingsScene>();
             if (File.Exists(StartScenePath)) list.Add(new EditorBuildSettingsScene(StartScenePath, true));
             list.Add(new EditorBuildSettingsScene(ScenePath, true));

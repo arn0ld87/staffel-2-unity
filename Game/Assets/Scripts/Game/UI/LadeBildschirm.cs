@@ -37,7 +37,8 @@ namespace Staffel2.Game.UI
         {
             _text.text = Spiel.LadeText ?? "";
             int n = Mathf.FloorToInt(Time.unscaledTime * 3) % 4;
-            _punkte.text = _fehlerKnoepfe.gameObject.activeSelf ? "" : "■ " + new string('■', n) + new string('□', 3 - n);
+            int sek = Mathf.Max(0, Mathf.FloorToInt(Time.realtimeSinceStartup - Spiel.LadeStartZeit));
+            _punkte.text = _fehlerKnoepfe.gameObject.activeSelf ? "" : $"■ {new string('■', n)}{new string('□', 3 - n)}   {sek} s";
         }
     }
 }
