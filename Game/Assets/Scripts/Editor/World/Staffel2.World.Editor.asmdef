@@ -1,0 +1,12 @@
+{
+    "name": "Staffel2.World.Editor",
+    "rootNamespace": "Staffel2.World.Editor",
+    "references": [
+        "Staffel2.World",
+        "Unity.TextMeshPro"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "autoReferenced": false
+}

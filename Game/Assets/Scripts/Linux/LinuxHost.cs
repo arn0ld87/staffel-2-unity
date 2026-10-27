@@ -42,7 +42,7 @@ namespace Staffel2.Linux
         /// Startet den Host. <paramref name="runtimeDir"/> enthält das Binary
         /// (linux-host-&lt;plattform&gt;), v86.wasm und assets/ mit dem Image.
         /// </summary>
-        public void Start(string runtimeDir, string binaryName, LinuxImage image)
+        public void Start(string runtimeDir, string binaryName, LinuxImage image, string savedState = null)
         {
             if (_process != null) throw new InvalidOperationException("Host läuft bereits");
             string binary = Path.Combine(runtimeDir, binaryName);
@@ -60,10 +60,14 @@ namespace Staffel2.Linux
                 CreateNoWindow = true,
                 StandardOutputEncoding = Encoding.UTF8,
             };
-            psi.Arguments = JoinArguments(
+            var args = new System.Collections.Generic.List<string>
+            {
                 "--assets", Path.Combine(runtimeDir, "assets"),
                 "--wasm", Path.Combine(runtimeDir, "v86.wasm"),
-                "--image", image == LinuxImage.Bildschirm ? "bildschirm" : "terminal");
+                "--image", image == LinuxImage.Bildschirm ? "bildschirm" : "terminal",
+            };
+            if (!string.IsNullOrEmpty(savedState)) { args.Add("--state"); args.Add(savedState); }
+            psi.Arguments = JoinArguments(args.ToArray());
             // Keine Zugangsdaten oder Pfade des Entwicklungsrechners an die Laufzeit durchreichen.
             foreach (var key in new[] { "SSH_AUTH_SOCK", "GITHUB_TOKEN", "GH_TOKEN", "NPM_TOKEN", "AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY", "ANTHROPIC_API_KEY", "OPENAI_API_KEY" })
                 psi.Environment.Remove(key);
@@ -94,6 +98,12 @@ namespace Staffel2.Linux
             Write(new JObject { ["t"] = "agent", ["line"] = line.TrimEnd('\n') });
         }
 
+        /// <summary>VM-Zustand gzip-komprimiert nach <paramref name="path"/>; Antwort als "saved".</summary>
+        public void SaveState(string path)
+        {
+            Write(new JObject { ["t"] = "save", ["path"] = path });
+        }
+
         private void Write(JObject message)
         {
             if (!Running) return;
@@ -117,6 +127,7 @@ namespace Staffel2.Linux
                     case "agent": _inbox.Enqueue(new HostMessage { Type = "agent", Line = (string)o["line"] ?? "" }); break;
                     case "started": _inbox.Enqueue(new HostMessage { Type = "started", Ms = (int?)o["ms"] ?? 0 }); break;
                     case "booting": _inbox.Enqueue(new HostMessage { Type = "booting" }); break;
+                    case "saved": _inbox.Enqueue(new HostMessage { Type = "saved", Text = (string)o["path"] }); break;
                     case "error": _inbox.Enqueue(new HostMessage { Type = "error", Text = (string)o["message"] }); break;
                 }
             }

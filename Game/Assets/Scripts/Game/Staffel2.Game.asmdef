@@ -1,0 +1,8 @@
+{
+    "name": "Staffel2.Game",
+    "rootNamespace": "Staffel2.Game",
+    "references": ["Staffel2.Core", "Staffel2.Terminal", "Staffel2.Linux", "Staffel2.World", "Unity.TextMeshPro", "Unity.InputSystem"],
+    "overrideReferences": true,
+    "precompiledReferences": ["Newtonsoft.Json.dll"],
+    "autoReferenced": true
+}

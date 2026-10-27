@@ -6,8 +6,10 @@
 //
 //   stdin  {"t":"in","d":"<base64>"}      Tastatur -> ttyS0 (Spielerterminal)
 //          {"t":"agent","line":"PING m1"} eine Zeile -> ttyS1 (mission-agent)
+//          {"t":"save","path":"/..."}     VM-Zustand gzip-komprimiert in eine Datei schreiben
 //          {"t":"stop"}                   VM beenden, Prozess endet
 //   stdout {"t":"booting"} {"t":"started","ms":N}
+//          {"t":"saved","path":"...","bytes":N}
 //          {"t":"out","d":"<base64>"}     Ausgabe von ttyS0
 //          {"t":"agent","line":"RES ..."} eine Zeile von ttyS1
 //          {"t":"error","message":"..."}
@@ -16,8 +18,10 @@
 // den mitgelieferten, inhaltsadressierten Image-Dateien; Schreibzugriffe der VM bleiben
 // im Speicher. Es gibt keinen Pfad, über den die VM Host-Dateien oder die Host-Shell
 // erreicht.
+import fs from 'node:fs';
 import path from 'node:path';
 import readline from 'node:readline';
+import zlib from 'node:zlib';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 import { V86 } from 'v86';
@@ -28,6 +32,8 @@ const { values } = parseArgs({
     assets: { type: 'string', default: path.join(HERE, 'assets', 'linux') },
     image: { type: 'string', default: 'terminal' },
     wasm: { type: 'string' },
+    // Gespeicherter Spielstand der VM (gzip), statt des Savestates aus dem Image.
+    state: { type: 'string' },
   },
 });
 
@@ -76,8 +82,25 @@ const emulator = new V86({
     baseurl: path.join(assets, 'alpine-rootfs-flat'),
     basefs: path.join(imageDir, 'alpine-fs.json'),
   },
-  initial_state: { url: path.join(imageDir, 'alpine-state.bin.zst') },
+  initial_state: values.state
+    ? { buffer: toArrayBuffer(zlib.gunzipSync(fs.readFileSync(values.state))) }
+    : { url: path.join(imageDir, 'alpine-state.bin.zst') },
 });
+
+function toArrayBuffer(buf) {
+  return buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength);
+}
+
+// Schreibt erst eine temporäre Datei und benennt dann um: ein Abbruch hinterlässt nie
+// einen halben Spielstand.
+async function saveState(target) {
+  const state = await emulator.save_state();
+  const packed = zlib.gzipSync(Buffer.from(state), { level: 6 });
+  const tmp = `${target}.tmp`;
+  fs.writeFileSync(tmp, packed);
+  fs.renameSync(tmp, target);
+  send({ t: 'saved', path: target, bytes: packed.length });
+}
 
 emulator.add_listener('emulator-started', () => {
   send({ t: 'started', ms: Date.now() - startedAt });
@@ -130,6 +153,8 @@ input.on('line', (line) => {
     emulator.serial_send_bytes(0, Buffer.from(message.d, 'base64'));
   } else if (message.t === 'agent' && typeof message.line === 'string') {
     emulator.serial_send_bytes(1, new TextEncoder().encode(message.line.replace(/\n/g, '') + '\n'));
+  } else if (message.t === 'save' && typeof message.path === 'string') {
+    saveState(message.path).catch((e) => send({ t: 'error', message: `Speichern fehlgeschlagen: ${e.message}` }));
   } else if (message.t === 'stop') {
     stop(0);
   }
