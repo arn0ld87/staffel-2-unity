@@ -1,0 +1,15 @@
+[  316.1 s] Starte Episode 0: Probelauf
+[  322.7 s] Raum bereit nach 320.3 s (Linux 0.6 s)
+[  333.8 s] Tippe: ls -l /srv/rechenwerk/uebung/kaffeekasse.csv /srv/rechenwerk/uebung/kaffeekasse.bak > ~/belege/kasse-meta.txt
+[  342.0 s]   Prüfung bestanden nach 0.6 s
+[  344.8 s] Tippe: cat ~/belege/kasse-meta.txt
+[  355.8 s] Antwort: kaffee
+[  360.9 s] Tippe: grep 2026-04-15 /srv/rechenwerk/uebung/kaffeekasse.csv > ~/belege/kasse-zeilen.txt && grep 2026-04-15 /srv/rechenwerk/uebung/kaffeekasse.bak >> ~/belege/kasse-zeilen.txt
+[  372.7 s]   Prüfung bestanden nach 0.5 s
+[  375.4 s] Tippe: cp /srv/rechenwerk/uebung/kaffeekasse.bak /srv/rechenwerk/uebung/kaffeekasse.csv
+[  382.1 s]   Prüfung bestanden nach 0.6 s
+[  397.3 s] Gespeichert: VM-Zustand 15 MiB
+[  403.0 s] Vorwurf gegen kaffee mit kasse-meta, kasse-zeilen
+[  403.5 s] Vorwurf: Richtig
+[  405.4 s] Episode gelöst und in der Akte gespeichert.
+[  413.1 s] Ende. Bilder: 2414
