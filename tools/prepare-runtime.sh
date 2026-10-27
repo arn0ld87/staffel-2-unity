@@ -19,6 +19,7 @@ done
 mkdir -p runtime/dist "$OUT/assets"
 bun build runtime/linux-host.mjs --compile --target=bun-darwin-arm64 --outfile runtime/dist/linux-host-darwin-arm64
 bun build runtime/linux-host.mjs --compile --target=bun-linux-x64 --outfile runtime/dist/linux-host-linux-x64
+bun build runtime/linux-host.mjs --compile --target=bun-windows-x64 --outfile runtime/dist/linux-host-windows-x64.exe
 cp runtime/node_modules/v86/build/v86.wasm runtime/dist/
 
 rsync -a --delete runtime/dist/ "$OUT/" --exclude assets

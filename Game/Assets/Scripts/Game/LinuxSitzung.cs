@@ -44,6 +44,8 @@ namespace Staffel2.Game
                     case RuntimePlatform.OSXPlayer: return "linux-host-darwin-arm64";
                     case RuntimePlatform.LinuxEditor:
                     case RuntimePlatform.LinuxPlayer: return "linux-host-linux-x64";
+                    case RuntimePlatform.WindowsEditor:
+                    case RuntimePlatform.WindowsPlayer: return "linux-host-windows-x64.exe";
                     default: return null;
                 }
             }

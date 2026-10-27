@@ -165,8 +165,9 @@ namespace Staffel2.Linux
         }
 
         /// <summary>
-        /// Argumente nach den Regeln, die .NET beim Zerlegen auf Unix anwendet: jedes Argument
-        /// in Anführungszeichen, \ und " darin maskiert. Es läuft keine Shell.
+        /// Argumente nach der MSVC-Regel (CommandLineToArgvW), die Windows und der Unix-Parser
+        /// von .NET gleich anwenden: jedes Argument in Anführungszeichen; Backslashes werden nur
+        /// vor einem " oder am Ende verdoppelt, damit C:\Pfade unverändert ankommen. Es läuft keine Shell.
         /// </summary>
         public static string JoinArguments(params string[] args)
         {
@@ -174,7 +175,16 @@ namespace Staffel2.Linux
             foreach (var a in args)
             {
                 if (sb.Length > 0) sb.Append(' ');
-                sb.Append('"').Append(a.Replace("\\", "\\\\").Replace("\"", "\\\"")).Append('"');
+                sb.Append('"');
+                int backslashes = 0;
+                foreach (char c in a)
+                {
+                    if (c == '\\') { backslashes++; continue; }
+                    if (c == '"') { sb.Append('\\', backslashes * 2 + 1).Append('"'); }
+                    else { sb.Append('\\', backslashes).Append(c); }
+                    backslashes = 0;
+                }
+                sb.Append('\\', backslashes * 2).Append('"');
             }
             return sb.ToString();
         }

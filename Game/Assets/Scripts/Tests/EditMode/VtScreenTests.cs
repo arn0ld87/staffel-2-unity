@@ -123,5 +123,14 @@ namespace Staffel2.Tests
         {
             Assert.AreEqual("\"--assets\" \"/A B/x\\\"y\"", LinuxHost.JoinArguments("--assets", "/A B/x\"y"));
         }
+
+        [Test]
+        public void WindowsPfadeBehaltenIhreBackslashes()
+        {
+            // Backslashes nur vor " oder am Argumentende verdoppeln (CommandLineToArgvW).
+            Assert.AreEqual("\"C:\\Spiele\\Ein Krimi\\linux\"", LinuxHost.JoinArguments(@"C:\Spiele\Ein Krimi\linux"));
+            Assert.AreEqual("\"C:\\ordner\\\\\"", LinuxHost.JoinArguments(@"C:\ordner\"));
+            Assert.AreEqual("\"a\\\\\\\"b\"", LinuxHost.JoinArguments("a\\\"b"));
+        }
     }
 }
