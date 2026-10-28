@@ -319,6 +319,38 @@ namespace Staffel2.Core.Tests
         }
 
         [Test]
+        public async Task PruefLauf_MerktSichObDerLetzteDurchlaufVollstaendigWar()
+        {
+            var e = TestDaten.Episode();
+            var exit = 3;
+            var lauf = new PruefLauf(new PruefLaufOptionen
+            {
+                Ermittlung = e,
+                LeseZustand = () => ErmittlungsEngine.StartZustand(),
+                Run = (s, t) => Task.FromResult(new AgentResult { ExitCode = exit, Output = "pruefung\ts.rechte.s1\t0\nende\t1\n" }),
+                SchreibeZustand = (z, ev) => { },
+                MeldeFehler = f => { },
+            });
+            Assert.That(lauf.Durchlaeufe, Is.EqualTo(0));
+
+            lauf.Anstossen();
+            await lauf.Leerlauf();
+            Assert.That(lauf.Durchlaeufe, Is.EqualTo(1));
+            Assert.That(lauf.LetzterDurchlaufOk, Is.False, "gescheiterter Run");
+
+            exit = 0;
+            lauf.Anstossen();
+            await lauf.Leerlauf();
+            Assert.That(lauf.Durchlaeufe, Is.EqualTo(2));
+            Assert.That(lauf.LetzterDurchlaufOk, Is.True, "vollständig angewendet");
+
+            exit = 1;
+            lauf.Anstossen();
+            await lauf.Leerlauf();
+            Assert.That(lauf.LetzterDurchlaufOk, Is.False, "ein späterer Fehlschlag überschreibt den Erfolg");
+        }
+
+        [Test]
         public async Task PruefLauf_FehlgeschlagenerRunWirdGemeldet_StoppeVerwirftErgebnis()
         {
             var e = TestDaten.Episode();

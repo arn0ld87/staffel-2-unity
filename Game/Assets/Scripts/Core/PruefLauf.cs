@@ -45,6 +45,8 @@ namespace Staffel2.Core
         private bool _laufend;
         private bool _nachlauf;
         private TaskCompletionSource<bool> _leerlauf;
+        private int _durchlaeufe;
+        private bool _letzterOk;
 
         public PruefLauf(PruefLaufOptionen optionen)
         {
@@ -85,6 +87,22 @@ namespace Staffel2.Core
             get { lock (_lock) return _laufend; }
         }
 
+        /// <summary>Abgeschlossene Durchläufe, auch gescheiterte. Steht fest, bevor Leerlauf() sich erfüllt.</summary>
+        public int Durchlaeufe
+        {
+            get { lock (_lock) return _durchlaeufe; }
+        }
+
+        /// <summary>
+        /// true, wenn der zuletzt abgeschlossene Durchlauf vollständig geprüft und angewendet hat (oder nichts zu
+        /// prüfen war); false nach jedem gemeldeten Fehler. Wer sich auf ein frisches Ergebnis verlassen muss
+        /// (Vorwurf), vergleicht <see cref="Durchlaeufe"/> vor dem Anstoßen und prüft danach diesen Wert.
+        /// </summary>
+        public bool LetzterDurchlaufOk
+        {
+            get { lock (_lock) return _letzterOk; }
+        }
+
         /// <summary>
         /// Erfüllt sich, sobald kein Lauf mehr unterwegs und kein Nachlauf vorgemerkt ist, oder sofort
         /// nach Stoppe(). Wirft nie.
@@ -122,29 +140,30 @@ namespace Staffel2.Core
         }
 
         // Ein Durchlauf. Kehrt in jedem Fall normal zurück, damit danach immer die Nachlauf-Prüfung kommt.
-        private async Task Durchlauf()
+        // Ergebnis: true, wenn vollständig geprüft und angewendet (oder nichts offen war).
+        private async Task<bool> Durchlauf()
         {
             List<Pruefung> pruefungen;
             try { pruefungen = ErmittlungsEngine.OffenePruefungen(_o.Ermittlung, _o.LeseZustand()); }
-            catch (Exception error) { Melden(PruefFehlerArt.Intern, error.Message); return; }
-            if (pruefungen.Count == 0) return;
+            catch (Exception error) { Melden(PruefFehlerArt.Intern, error.Message); return false; }
+            if (pruefungen.Count == 0) return true;
 
             string skript;
             try { skript = ErmittlungsEngine.BuendelSkript(pruefungen); }
-            catch (Exception error) { Melden(PruefFehlerArt.Skript, error.Message); return; }
+            catch (Exception error) { Melden(PruefFehlerArt.Skript, error.Message); return false; }
 
-            if (Gestoppt) return;
+            if (Gestoppt) return false;
             AgentResult ergebnis;
             try { ergebnis = await _o.Run(skript, _o.TimeoutMs).ConfigureAwait(false); }
-            catch (Exception error) { Melden(PruefFehlerArt.Agent, error.Message); return; }
+            catch (Exception error) { Melden(PruefFehlerArt.Agent, error.Message); return false; }
 
             // Nach Stoppe() gilt nichts mehr, auch keine bereits eingetroffene Antwort.
-            if (Gestoppt) return;
+            if (Gestoppt) return false;
 
             if (ergebnis.ExitCode != 0)
             {
                 Melden(PruefFehlerArt.Agent, $"Prüfung fehlgeschlagen (exit {ergebnis.ExitCode})");
-                return;
+                return false;
             }
 
             PruefAnwendung neu;
@@ -153,10 +172,11 @@ namespace Staffel2.Core
                 neu = ErmittlungsEngine.WendePruefungAn(
                     _o.Ermittlung, _o.LeseZustand(), ErmittlungsEngine.LeseBuendelAusgabe(ergebnis.Output));
             }
-            catch (Exception error) { Melden(PruefFehlerArt.Intern, error.Message); return; }
-            if (Gestoppt) return;
+            catch (Exception error) { Melden(PruefFehlerArt.Intern, error.Message); return false; }
+            if (Gestoppt) return false;
             try { _o.SchreibeZustand(neu.Zustand, neu.Ereignisse); }
             catch { /* Auch ein werfender Rückruf beendet den Durchlauf regulär. */ }
+            return true;
         }
 
         private async Task Lauf()
@@ -165,10 +185,13 @@ namespace Staffel2.Core
             {
                 for (;;)
                 {
-                    try { await Durchlauf().ConfigureAwait(false); }
+                    bool ok = false;
+                    try { ok = await Durchlauf().ConfigureAwait(false); }
                     catch { /* Durchlauf fängt selbst alles ab; dies ist nur die letzte Absicherung. */ }
                     lock (_lock)
                     {
+                        _durchlaeufe++;
+                        _letzterOk = ok;
                         if (_gestoppt || !_nachlauf) break;
                         _nachlauf = false;
                     }

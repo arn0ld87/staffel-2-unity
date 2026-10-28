@@ -267,9 +267,18 @@ namespace Staffel2.Game
             Geaendert?.Invoke();
             try
             {
+                // Ausgewertet wird nur gegen eine frische, vollständige Prüfung: Scheitert sie (Timeout,
+                // Fehler, unvollständiges Bündel), zählen keine früher erkannten Belege.
+                int durchlaeufeVorher = _lauf.Durchlaeufe;
                 _lauf.Anstossen();
                 await _lauf.Leerlauf();
                 if (version != _version) return null;
+                if (_lauf.Durchlaeufe == durchlaeufeVorher || !_lauf.LetzterDurchlaufOk)
+                {
+                    Protokoll?.Invoke("Vorwurf: frische Prüfung nicht vollständig, keine Auswertung");
+                    Melde("auftrag", new[] { Satz(VorwurfFehler) });
+                    return null;
+                }
                 var auswertung = ErmittlungsEngine.PruefeVorwurf(Ermittlung, Zustand, new VorwurfEingabe { VerdaechtigeId = verdaechtigeId, BelegIds = belegIds });
                 bool warGeloest = Zustand.Geloest;
                 Zustand = auswertung.Zustand;

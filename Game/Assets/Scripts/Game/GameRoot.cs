@@ -308,10 +308,16 @@ namespace Staffel2.Game
             _speichertGerade = true;
             try
             {
-                if (Sitzung != null && Sitzung.Bereit && !Sitzung.Zustand.Geloest && Linux.Phase == LinuxPhase.Bereit)
+                var sitzung = Sitzung;
+                if (sitzung != null && sitzung.Bereit && !sitzung.Zustand.Geloest && Linux.Phase == LinuxPhase.Bereit)
                 {
                     await Linux.SpeichernAsync(Ablage.VmPfad);
-                    Stand.Laufend = Sitzung.StandFuerSpielstand();
+                    // Während des Wartens kann der Fall gelöst worden sein (AbschliessenAsync hat Laufend
+                    // und VM-Datei schon verworfen): den verspätet geschriebenen Stand dann wieder verwerfen,
+                    // statt einen gelösten Fall als fortsetzbar zurückzuschreiben.
+                    bool geloest = sitzung.Zustand.Geloest || Stand.Akte.ContainsKey(sitzung.Ermittlung.Id);
+                    if (geloest) Ablage.LaufendVerwerfen(Stand);
+                    else if (Sitzung == sitzung) Stand.Laufend = sitzung.StandFuerSpielstand();
                 }
                 Ablage.Speichern(Stand);
                 if (meldung) _ui.Hud.Meldung("Gespeichert.");
