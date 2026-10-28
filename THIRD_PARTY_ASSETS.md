@@ -17,15 +17,15 @@ Diese Datei dokumentiert alle im Projekt „Ein Linux-Krimi – Staffel 2“ ver
 
 | Asset | Urheber / Quelle | Lizenz / Status | Verarbeitung im Repo | Verwendete Dateien im Projekt |
 |---|---|---|---|---|
-| **Alex-Büste (`Alex_Bueste.fbx`, `Alex_BaseColor.png`)** | Alexander Schneider (eigene Vorlage `alex-dialog-bueste.fbx`) | CC BY-SA 4.0, ohne Persönlichkeitsrechte (siehe `LICENSE-INHALTE.md`; **zu prüfen**: mit welchem Werkzeug die Vorlage entstand und ob dessen Nutzungsbedingungen die Freigabe erlauben) | Nachbearbeitet über `tools/blender/alex_gesicht.py` (Shape Keys `Blinzeln_L`, `Blinzeln_R`, `Mund_Auf`, `Mund_Schmal`, `Neutral`) | `Game/Assets/Art/Alex/`, `Game/Assets/Resources/Alex/` |
+| **Alex-Büste (`Alex_Bueste.fbx`, `Alex_BaseColor.png`)** | Alexander Schneider; Ausgangsmodell `alex-dialog-bueste.fbx` erstellt mit Tripo AI (`https://www.tripo3d.ai`, kostenloser Plan) | CC BY-NC-SA 4.0, ohne Persönlichkeitsrechte (siehe `LICENSE-INHALTE.md`). Grundlage: Tripo stellt Modelle aus dem kostenlosen Plan laut Preisseite öffentlich unter CC BY 4.0, kommerzielle Nutzung nur in bezahlten Plänen (Tripo-AGB selbst nicht eingesehen, Abruf blockiert) | Nachbearbeitet über `tools/blender/alex_gesicht.py` (Shape Keys `Blinzeln_L`, `Blinzeln_R`, `Mund_Auf`, `Mund_Schmal`, `Neutral`) | `Game/Assets/Art/Alex/`, `Game/Assets/Resources/Alex/` |
 
 ---
 
-## 2b. Figurenporträts (Herkunft offen)
+## 2b. Figurenporträts
 
 | Asset | Quelle | Lizenz / Status | Verwendete Dateien |
 |---|---|---|---|
-| Porträts Timo, Nadia, Margit, Kaffeeautomat | aus der Webversion übernommen; in deren Git-Historie nicht nachweisbar | **Zu prüfen**: Herkunft und Rechte. Bis dahin alle Rechte vorbehalten, nicht unter CC BY-SA | `Game/Assets/StreamingAssets/staffel2/bilder/*.webp` |
+| Porträts Timo, Nadia, Margit, Kaffeeautomat | Alexander Schneider, erzeugt mit Google Gemini | CC BY-SA 4.0 (siehe `LICENSE-INHALTE.md`) | `Game/Assets/StreamingAssets/staffel2/bilder/*.webp` |
 
 ---
 

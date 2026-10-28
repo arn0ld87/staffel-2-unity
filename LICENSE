@@ -22,7 +22,9 @@ SOFTWARE.
 
 ---
 
-This MIT license covers the source code of this repository. Game content
-(episode texts, the Alex bust and its textures, self-made sounds, renders and
-videos) is licensed under CC BY-SA 4.0, see LICENSE-INHALTE.md. Third-party
+This MIT license covers the source code of this repository. Game content is
+licensed under Creative Commons: episode texts, character portraits and
+self-made sounds under CC BY-SA 4.0; the Alex figure (base model made with the
+free Tripo AI plan), its renders and the demo video under CC BY-NC-SA 4.0
+(non-commercial). See LICENSE-INHALTE.md. Third-party
 assets keep their own licenses, see THIRD_PARTY_ASSETS.md.
