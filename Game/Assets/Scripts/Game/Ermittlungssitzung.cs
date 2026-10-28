@@ -48,6 +48,11 @@ namespace Staffel2.Game
         public const string AntwortFehlerHinweis = "Die Antwort konnte gerade nicht geprüft werden. Versuch es gleich noch einmal.";
         public const string BelegUngueltig = "Ein ausgewählter Beleg ist nicht mehr gültig. Aktualisiere die Aktenwand.";
         public const string VorwurfFehler = "Belege konnten gerade nicht geprüft werden. Bitte erneut versuchen.";
+        public static readonly string[] BildschirmHinweis =
+        {
+            "Das ist der Bildschirm des Rechners. Rechtsklick auf den Hintergrund öffnet das Menü.",
+            "Was du in Programmen auf dem Bildschirm speicherst, prüft niemand von selbst. Danach: „Stand prüfen“.",
+        };
         // Großzügig: Unter Last braucht der erste Dateizugriff über 9p deutlich länger als im Browser.
         private const int SetupTimeoutMs = 180_000;
 
@@ -89,6 +94,7 @@ namespace Staffel2.Game
         private Func<int, string, int, string, Task> _reply;
         private PruefLauf _lauf;
         private bool _promptAusstehend;
+        private bool _bildschirmHinweisGezeigt;
         private int _version;
         private long _startMs;
 
@@ -113,6 +119,7 @@ namespace Staffel2.Game
             Bereit = false;
             Fehler = null;
             PruefHinweisText = null;
+            _bildschirmHinweisGezeigt = false;
             bool IstAktuell() => version == _version;
 
             if (fortsetzen == null || fortsetzen.EpisodeId != Ermittlung.Id)
@@ -203,6 +210,15 @@ namespace Staffel2.Game
 
         /// <summary>„Stand prüfen“: derselbe volle Prüflauf wie nach einem Befehl.</summary>
         public void StandPruefen() => _lauf?.Anstossen();
+
+        /// <summary>Einmaliger Pager-Hinweis beim ersten Öffnen des Reiters „Bildschirm“ (wie ErmittlungApp.tsx).</summary>
+        public void BildschirmErstmalsGeoeffnet()
+        {
+            if (_bildschirmHinweisGezeigt || !Bereit || !Ermittlung.Bildschirm) return;
+            _bildschirmHinweisGezeigt = true;
+            if (Pager.Any(p => p.Zeilen != null && p.Zeilen.Count > 0 && p.Zeilen[0] == BildschirmHinweis[0])) return;
+            Melde("auftrag", BildschirmHinweis);
+        }
 
         /// <summary>Aktueller Schritt einer Spur oder null, wenn die Spur erledigt ist.</summary>
         public ErmittlungsSchritt AktuellerSchritt(Spur spur) => ErmittlungsEngine.AktuellerSchritt(spur, Zustand);

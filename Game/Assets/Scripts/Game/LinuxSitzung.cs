@@ -22,10 +22,14 @@ namespace Staffel2.Game
         public AgentClient Agent { get; private set; }
         public LinuxImage Image { get; private set; }
         public float StartDauer { get; private set; }
+        public Texture2D VmBildschirm { get; private set; }
+        public int VmBildschirmFrames { get; private set; }
+        public bool VmBildschirmGrafisch { get; private set; }
 
         public event Action PhaseGeaendert;
         public event Action<string> PromptSignal;
         public event Action<string> Gespeichert;
+        public event Action VmBildschirmAktualisiert;
 
         private LinuxHost _host;
         private float _startZeit;
@@ -93,6 +97,13 @@ namespace Staffel2.Game
 
         public void Tippe(byte[] bytes) => _host?.SendTerminal(bytes);
 
+        public void SetzeBildschirmAktiv(bool aktiv) => _host?.SetScreenEnabled(aktiv);
+
+        public void SendeMaus(int x, int y, int w, int h, int dx, int dy, int buttons, int wheel = 0) =>
+            _host?.SendMouse(x, y, w, h, dx, dy, buttons, wheel);
+
+        public void SendeScancodes(params int[] codes) => _host?.SendKeyScancodes(codes);
+
         /// <summary>Spaltenzahl der Shell anpassen (stty über den Agenten, nichts im Terminal sichtbar).</summary>
         public void GroesseSetzen(int cols, int rows)
         {
@@ -124,6 +135,8 @@ namespace Staffel2.Game
             _host?.Dispose();
             _host = null;
             Agent = null;
+            VmBildschirmFrames = 0;
+            VmBildschirmGrafisch = false;
             if (Phase != LinuxPhase.Aus) SetzePhase(LinuxPhase.Aus, null);
         }
 
@@ -138,6 +151,30 @@ namespace Staffel2.Game
                     case "out": Bildschirm.Feed(m.Data); break;
                     case "agent": Agent?.OnLine(m.Line); break;
                     case "saved": _speichern?.TrySetResult(m.Text); break;
+                    case "frame":
+                        if (m.Width > 0 && m.Height > 0 && m.Data != null && m.Data.Length == m.Width * m.Height * 4)
+                        {
+                            if (VmBildschirm == null || VmBildschirm.width != m.Width || VmBildschirm.height != m.Height)
+                            {
+                                if (VmBildschirm != null) Destroy(VmBildschirm);
+                                VmBildschirm = new Texture2D(m.Width, m.Height, TextureFormat.RGBA32, false)
+                                {
+                                    filterMode = FilterMode.Bilinear,
+                                    wrapMode = TextureWrapMode.Clamp,
+                                };
+                            }
+                            VmBildschirm.LoadRawTextureData(m.Data);
+                            VmBildschirm.Apply(false);
+                            VmBildschirmGrafisch = true;
+                            VmBildschirmFrames++;
+                            VmBildschirmAktualisiert?.Invoke();
+                        }
+                        else
+                        {
+                            VmBildschirmGrafisch = false;
+                            VmBildschirmAktualisiert?.Invoke();
+                        }
+                        break;
                     case "error":
                         if (_speichern != null && !_speichern.Task.IsCompleted && m.Text != null && m.Text.StartsWith("Speichern"))
                             _speichern.TrySetException(new IOException(m.Text));

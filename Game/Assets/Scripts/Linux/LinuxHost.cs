@@ -13,11 +13,13 @@ namespace Staffel2.Linux
     /// <summary>Nachricht vom Host-Prozess, auf dem Hauptthread abgeholt.</summary>
     public struct HostMessage
     {
-        public string Type;      // booting | started | out | agent | error | exit
-        public byte[] Data;      // bei out
+        public string Type;      // booting | started | out | agent | frame | error | exit
+        public byte[] Data;      // bei out oder frame (RGBA32)
         public string Line;      // bei agent
         public string Text;      // bei error/exit
         public int Ms;           // bei started
+        public int Width;        // bei frame
+        public int Height;       // bei frame
     }
 
     /// <summary>
@@ -113,6 +115,36 @@ namespace Staffel2.Linux
             Write(new JObject { ["t"] = "save", ["path"] = path });
         }
 
+        /// <summary>Grafischen Bildschirm (SVGA-Vollbilder) abonnieren oder abbestellen.</summary>
+        public void SetScreenEnabled(bool on)
+        {
+            Write(new JObject { ["t"] = "screen", ["on"] = on });
+        }
+
+        /// <summary>Mausposition (0..w-1, 0..h-1), Bewegung, Tastenmaske (Bit 0=Links, 1=Rechts, 2=Mitte) und Mausrad an v86 senden.</summary>
+        public void SendMouse(int x, int y, int w, int h, int dx, int dy, int buttons, int wheel = 0)
+        {
+            Write(new JObject
+            {
+                ["t"] = "mouse",
+                ["x"] = x,
+                ["y"] = y,
+                ["w"] = w,
+                ["h"] = h,
+                ["dx"] = dx,
+                ["dy"] = dy,
+                ["buttons"] = buttons,
+                ["wheel"] = wheel,
+            });
+        }
+
+        /// <summary>PS/2-Scancodes (Set 1, inkl. 0xE0-Präfix und Break-Codes mit Bit 7) an v86 senden.</summary>
+        public void SendKeyScancodes(params int[] codes)
+        {
+            if (codes == null || codes.Length == 0) return;
+            Write(new JObject { ["t"] = "key", ["codes"] = new JArray(codes) });
+        }
+
         private void Write(JObject message)
         {
             if (!Running) return;
@@ -138,6 +170,31 @@ namespace Staffel2.Linux
                     case "started": _inbox.Enqueue(new HostMessage { Type = "started", Ms = (int?)o["ms"] ?? 0 }); break;
                     case "booting": _inbox.Enqueue(new HostMessage { Type = "booting" }); break;
                     case "saved": _inbox.Enqueue(new HostMessage { Type = "saved", Text = (string)o["path"] }); break;
+                    case "frame":
+                    {
+                        int w = (int?)o["w"] ?? 0;
+                        int h = (int?)o["h"] ?? 0;
+                        string b64 = (string)o["d"] ?? "";
+                        byte[] raw = null;
+                        if (w > 0 && h > 0 && b64.Length > 0)
+                        {
+                            byte[] compressed = Convert.FromBase64String(b64);
+                            raw = new byte[w * h * 4];
+                            using (var ms = new MemoryStream(compressed))
+                            using (var ds = new System.IO.Compression.DeflateStream(ms, System.IO.Compression.CompressionMode.Decompress))
+                            {
+                                int offset = 0;
+                                while (offset < raw.Length)
+                                {
+                                    int read = ds.Read(raw, offset, raw.Length - offset);
+                                    if (read <= 0) break;
+                                    offset += read;
+                                }
+                            }
+                        }
+                        _inbox.Enqueue(new HostMessage { Type = "frame", Width = w, Height = h, Data = raw });
+                        break;
+                    }
                     case "error": _inbox.Enqueue(new HostMessage { Type = "error", Text = (string)o["message"] }); break;
                 }
             }
