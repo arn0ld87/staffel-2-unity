@@ -24,3 +24,10 @@
 .env
 *.env
 /Game/.vscode/
+/third_party_staging/
+/docs/demo/bilder/
+/docs/demo/spielstand/
+/docs/demo/player.log
+
+# Gedächtnis-Datenbanken von KI-Werkzeugen
+.open-mem/

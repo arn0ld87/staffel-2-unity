@@ -1,0 +1,14 @@
+{
+    "name": "Staffel2.World.Editor",
+    "rootNamespace": "Staffel2.World.Editor",
+    "references": [
+        "Staffel2.World",
+        "Unity.TextMeshPro",
+        "Unity.RenderPipelines.Core.Runtime",
+        "Unity.RenderPipelines.Universal.Runtime"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "autoReferenced": false
+}

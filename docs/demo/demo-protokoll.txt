@@ -1,0 +1,28 @@
+[    2.6 s] Demo: Episoden 0, normal, 1920×1080, Apple M3, Qualität PC
+[    9.3 s] Hauptmenü: 11 fps im Mittel, 95 % der Bilder unter 100 ms (105 Bilder)
+[    9.3 s] Episode 0: Probelauf
+[   20.7 s]     Setup Rahmen: exit 0 nach 8.6 s
+[   24.4 s]     Setup Einsatzrahmen: exit 0 nach 3.7 s
+[   27.2 s]     Setup Episode: exit 0 nach 2.8 s
+[   27.3 s]   OK     Linux und Setup bereit nach 18.0 s (Linux-Start 2.7 s)
+[   27.3 s]   Laden: 21 fps im Mittel, 95 % der Bilder unter 84 ms (365 Bilder)
+[   35.8 s]   Raum: 23 fps im Mittel, 95 % der Bilder unter 83 ms (192 Bilder)
+[   39.0 s]   Tippe: ls -l /srv/rechenwerk/uebung/kaffeekasse.csv /srv/rechenwerk/uebung/kaffeekasse.bak > ~/belege/kasse-meta.txt
+[   50.1 s]   OK     ls -l /srv/rechenwerk/uebung/kaffeekasse.csv /srv/rechenwerk/uebung/kaffeekasse.bak > ~/belege/kasse-meta.txt (0.6 s)
+[   53.4 s]   Tippe: cat ~/belege/kasse-meta.txt
+[   65.3 s]   OK     Gegenprobe: falsche Antwort (1.4 s)
+[   69.4 s]   OK     Antwort kaffee (0.1 s)
+[   75.9 s]   Tippe: grep 2026-04-15 /srv/rechenwerk/uebung/kaffeekasse.csv > ~/belege/kasse-zeilen.txt && grep 2026-04-15 /srv/rechenwerk/uebung/kaffeekasse.bak >> ~/belege/kasse-zeilen.txt
+[   91.9 s]   OK     grep 2026-04-15 /srv/rechenwerk/uebung/kaffeekasse.csv > ~/belege/kasse-zeilen.txt && grep 2026-04-15 /srv/rechenwerk/uebung/kaffeekasse.bak >> ~/belege/kasse-zeilen.txt (0.8 s)
+[   95.3 s]   Tippe: cp /srv/rechenwerk/uebung/kaffeekasse.bak /srv/rechenwerk/uebung/kaffeekasse.csv
+[  102.9 s]   OK     cp /srv/rechenwerk/uebung/kaffeekasse.bak /srv/rechenwerk/uebung/kaffeekasse.csv (0.6 s)
+[  106.6 s]   OK     Speichern mit VM-Zustand (15 MiB)
+[  107.1 s]   OK     Hauptmenü bietet Fortsetzen an
+[  110.4 s]   OK     Zustand nach Fortsetzen (Belege kasse-meta,kasse-zeilen, Pager 8)
+[  120.7 s]   OK     Belegdateien in der fortgesetzten VM vorhanden
+[  129.1 s]   Vorwurf gegen kaffee: Richtig
+[  129.1 s]   OK     Vorwurf gegen kaffee (0.1 s)
+[  133.8 s]   Ermittlung: 21 fps im Mittel, 95 % der Bilder unter 100 ms (2086 Bilder)
+[  133.8 s]   OK     Episode 0 gelöst und in der Akte, Dauer 125 s Echtzeit
+[  146.6 s] Ergebnis: 12 Prüfungen bestanden, 0 fehlgeschlagen.
+[  146.6 s] Ende. ERFOLGREICH. Bilder: 2963

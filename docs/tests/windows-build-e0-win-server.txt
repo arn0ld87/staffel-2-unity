@@ -1,0 +1,28 @@
+[    7,0 s] Demo: Episoden 0, schnell, 1920×1080, Microsoft Basic Render Driver, Qualität PC
+[   12,4 s] Hauptmenü: 1 fps im Mittel, 95 % der Bilder unter 2982 ms (7 Bilder)
+[   12,4 s] Episode 0: Probelauf
+[   27,1 s]     Setup Rahmen: exit 0 nach 11,3 s
+[   41,6 s]     Setup Einsatzrahmen: exit 0 nach 14,5 s
+[   55,8 s]     Setup Episode: exit 0 nach 14,2 s
+[   56,8 s]   OK     Linux und Setup bereit nach 44,4 s (Linux-Start 3,2 s)
+[   56,8 s]   Laden: 2 fps im Mittel, 95 % der Bilder unter 530 ms (97 Bilder)
+[   58,7 s]   Raum: 2 fps im Mittel, 95 % der Bilder unter 525 ms (3 Bilder)
+[   59,6 s]   Tippe: ls -l /srv/rechenwerk/uebung/kaffeekasse.csv /srv/rechenwerk/uebung/kaffeekasse.bak > ~/belege/kasse-meta.txt
+[   66,4 s]   OK     ls -l /srv/rechenwerk/uebung/kaffeekasse.csv /srv/rechenwerk/uebung/kaffeekasse.bak > ~/belege/kasse-meta.txt (5,6 s)
+[   67,3 s]   Tippe: cat ~/belege/kasse-meta.txt
+[   78,4 s]   OK     Gegenprobe: falsche Antwort (1,7 s)
+[   83,2 s]   OK     Antwort kaffee (0,4 s)
+[   85,0 s]   Tippe: grep 2026-04-15 /srv/rechenwerk/uebung/kaffeekasse.csv > ~/belege/kasse-zeilen.txt && grep 2026-04-15 /srv/rechenwerk/uebung/kaffeekasse.bak >> ~/belege/kasse-zeilen.txt
+[   93,5 s]   OK     grep 2026-04-15 /srv/rechenwerk/uebung/kaffeekasse.csv > ~/belege/kasse-zeilen.txt && grep 2026-04-15 /srv/rechenwerk/uebung/kaffeekasse.bak >> ~/belege/kasse-zeilen.txt (7,1 s)
+[   94,4 s]   Tippe: cp /srv/rechenwerk/uebung/kaffeekasse.bak /srv/rechenwerk/uebung/kaffeekasse.csv
+[  101,7 s]   OK     cp /srv/rechenwerk/uebung/kaffeekasse.bak /srv/rechenwerk/uebung/kaffeekasse.csv (5,9 s)
+[  104,4 s]   OK     Speichern mit VM-Zustand (15 MiB)
+[  105,9 s]   OK     Hauptmenü bietet Fortsetzen an
+[  109,4 s]   OK     Zustand nach Fortsetzen (Belege kasse-meta,kasse-zeilen, Pager 8)
+[  118,2 s]   OK     Belegdateien in der fortgesetzten VM vorhanden
+[  124,2 s]   Vorwurf gegen kaffee: Richtig
+[  124,6 s]   OK     Vorwurf gegen kaffee (0,4 s)
+[  125,6 s]   Ermittlung: 2 fps im Mittel, 95 % der Bilder unter 498 ms (148 Bilder)
+[  126,5 s]   OK     Episode 0 gelöst und in der Akte, Dauer 114 s Echtzeit
+[  128,7 s] Ergebnis: 12 Prüfungen bestanden, 0 fehlgeschlagen.
+[  128,7 s] Ende. ERFOLGREICH. Bilder: 0

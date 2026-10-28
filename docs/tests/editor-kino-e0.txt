@@ -1,0 +1,34 @@
+[   15.6 s] Demo: Episoden 0, kino, 1976×1178, Apple M3, Qualität PC
+[   18.8 s] Hauptmenü: 56 fps im Mittel, 95 % der Bilder unter 24 ms (179 Bilder)
+[   18.8 s]   Menü: Befehlsübersicht und Einstellungen
+[   36.6 s] Episode 0: Probelauf
+[   42.1 s]     Setup Rahmen: exit 0 nach 4.5 s
+[   46.1 s]     Setup Einsatzrahmen: exit 0 nach 4.0 s
+[   49.3 s]     Setup Episode: exit 0 nach 3.2 s
+[   49.4 s]   OK     Linux und Setup bereit nach 12.8 s (Linux-Start 0.8 s)
+[   49.4 s]   Laden: 59 fps im Mittel, 95 % der Bilder unter 22 ms (1800 Bilder)
+[   51.4 s]   Rundgang durch den Serverraum
+[   90.6 s]   Raum: 60 fps im Mittel, 95 % der Bilder unter 22 ms (2451 Bilder)
+[   92.6 s]   Tippe: ls -l /srv/rechenwerk/uebung
+[  103.2 s]   Tippe: grpe 2026-04-15 /srv/rechenwerk/uebung/kaffeekasse.csv
+[  116.2 s]   Tippe: ls -l /srv/rechenwerk/uebung/kaffeekasse.csv /srv/rechenwerk/uebung/kaffeekasse.bak > ~/belege/kasse-meta.txt
+[  134.9 s]   OK     ls -l /srv/rechenwerk/uebung/kaffeekasse.csv /srv/rechenwerk/uebung/kaffeekasse.bak > ~/belege/kasse-meta.txt (0.6 s)
+[  138.4 s]   Tippe: cat ~/belege/kasse-meta.txt
+[  152.8 s]   OK     Gegenprobe: falsche Antwort (1.0 s)
+[  157.2 s]   OK     Antwort kaffee (0.0 s)
+[  162.7 s]   Tippe: grep 2026-04-15 /srv/rechenwerk/uebung/kaffeekasse.csv > ~/belege/kasse-zeilen.txt && grep 2026-04-15 /srv/rechenwerk/uebung/kaffeekasse.bak >> ~/belege/kasse-zeilen.txt
+[  190.5 s]   OK     grep 2026-04-15 /srv/rechenwerk/uebung/kaffeekasse.csv > ~/belege/kasse-zeilen.txt && grep 2026-04-15 /srv/rechenwerk/uebung/kaffeekasse.bak >> ~/belege/kasse-zeilen.txt (0.7 s)
+[  194.0 s]   Tippe: cp /srv/rechenwerk/uebung/kaffeekasse.bak /srv/rechenwerk/uebung/kaffeekasse.csv
+[  213.2 s]   OK     cp /srv/rechenwerk/uebung/kaffeekasse.bak /srv/rechenwerk/uebung/kaffeekasse.csv (6.1 s)
+[  228.7 s]   OK     Speichern über das Pausemenü (VM-Zustand)
+[  230.7 s]   OK     Hauptmenü bietet Fortsetzen an
+[  235.3 s]   OK     Zustand nach Fortsetzen (Belege kasse-meta,kasse-zeilen, Pager 8)
+[  243.3 s]   OK     Belegdateien in der fortgesetzten VM vorhanden
+[  248.4 s]   Vorwurf gegen timo: FalschePerson
+[  249.4 s]   OK     Gegenprobe: falscher Vorwurf (1.0 s)
+[  253.4 s]   Vorwurf gegen kaffee: Richtig
+[  253.4 s]   OK     Vorwurf gegen kaffee (0.0 s)
+[  256.9 s]   Ermittlung: 58 fps im Mittel, 95 % der Bilder unter 23 ms (9724 Bilder)
+[  256.9 s]   OK     Episode 0 gelöst und in der Akte, Dauer 220 s Echtzeit
+[  263.9 s] Ergebnis: 13 Prüfungen bestanden, 0 fehlgeschlagen.
+[  263.9 s] Ende. ERFOLGREICH. Bilder: 0

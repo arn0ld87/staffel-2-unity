@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+# unity command gegen das Game-Projekt, mit festem Projektpfad und Aufrufer-Kennung.
+#   tools/dev/uc <gruppe> <befehl> [args] [-- pipeline-args]
+P="$(cd "$(dirname "$0")/../.." && pwd)/Game"
+args=(); rest=()
+seen=0
+for a in "$@"; do
+  if [ "$a" = "--" ] && [ $seen -eq 0 ]; then seen=1; continue; fi
+  if [ $seen -eq 1 ]; then rest+=("$a"); else args+=("$a"); fi
+done
+if [ ${#rest[@]} -gt 0 ]; then
+  exec unity command "${args[@]}" --project-path "$P" --no-banner --caller plugin --skill unity-cli -- "${rest[@]}"
+else
+  exec unity command "${args[@]}" --project-path "$P" --no-banner --caller plugin --skill unity-cli
+fi

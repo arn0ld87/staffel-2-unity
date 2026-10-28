@@ -1,0 +1,84 @@
+[   37.6 s] Demo: Episoden 0,1,3,2, schnell, 2614×800, Apple M3, Qualität PC
+[   39.9 s] Hauptmenü: 10 fps im Mittel, 95 % der Bilder unter 361 ms (11 Bilder)
+[   39.9 s] Episode 0: Probelauf
+[   63.0 s]     Setup Rahmen: exit 0 nach 19.4 s
+[   73.7 s]     Setup Einsatzrahmen: exit 0 nach 10.7 s
+[   84.0 s]     Setup Episode: exit 0 nach 10.3 s
+[   84.2 s]   OK     Linux und Setup bereit nach 44.3 s (Linux-Start 3.5 s)
+[   84.2 s]   Laden: 34 fps im Mittel, 95 % der Bilder unter 82 ms (1491 Bilder)
+[   85.2 s]   Raum: 36 fps im Mittel, 95 % der Bilder unter 99 ms (36 Bilder)
+[   85.7 s]   Tippe: ls -l /srv/rechenwerk/uebung/kaffeekasse.csv /srv/rechenwerk/uebung/kaffeekasse.bak > ~/belege/kasse-meta.txt
+[   93.2 s]   OK     ls -l /srv/rechenwerk/uebung/kaffeekasse.csv /srv/rechenwerk/uebung/kaffeekasse.bak > ~/belege/kasse-meta.txt (7.4 s)
+[   93.7 s]   Tippe: cat ~/belege/kasse-meta.txt
+[  102.7 s]   OK     Gegenprobe: falsche Antwort (1.1 s)
+[  107.6 s]   OK     Antwort kaffee (0.1 s)
+[  108.6 s]   Tippe: grep 2026-04-15 /srv/rechenwerk/uebung/kaffeekasse.csv > ~/belege/kasse-zeilen.txt && grep 2026-04-15 /srv/rechenwerk/uebung/kaffeekasse.bak >> ~/belege/kasse-zeilen.txt
+[  114.2 s]   OK     grep 2026-04-15 /srv/rechenwerk/uebung/kaffeekasse.csv > ~/belege/kasse-zeilen.txt && grep 2026-04-15 /srv/rechenwerk/uebung/kaffeekasse.bak >> ~/belege/kasse-zeilen.txt (5.6 s)
+[  114.7 s]   Tippe: cp /srv/rechenwerk/uebung/kaffeekasse.bak /srv/rechenwerk/uebung/kaffeekasse.csv
+[  118.8 s]   OK     cp /srv/rechenwerk/uebung/kaffeekasse.bak /srv/rechenwerk/uebung/kaffeekasse.csv (4.2 s)
+[  119.4 s]   FEHLER Speichern mit VM-Zustand (fehlt)
+[  123.1 s]   Vorwurf gegen kaffee: Richtig
+[  123.1 s]   OK     Vorwurf gegen kaffee (0.0 s)
+[  123.6 s]   Ermittlung: 47 fps im Mittel, 95 % der Bilder unter 36 ms (1818 Bilder)
+[  124.9 s]   OK     Episode 0 gelöst und in der Akte, Dauer 85 s Echtzeit
+[  126.4 s] Episode 1: Zu viele Rechte
+[  145.6 s]     Setup Rahmen: exit 0 nach 17.5 s
+[  164.5 s]     Setup Einsatzrahmen: exit 0 nach 18.9 s
+[  180.1 s]     Setup Episode: exit 0 nach 15.6 s
+[  180.1 s]   OK     Linux und Setup bereit nach 53.7 s (Linux-Start 1.5 s)
+[  180.1 s]   Laden: 49 fps im Mittel, 95 % der Bilder unter 35 ms (2758 Bilder)
+[  181.2 s]   Raum: 48 fps im Mittel, 95 % der Bilder unter 43 ms (48 Bilder)
+[  181.7 s]   Tippe: grep sudoers.d /var/log/rechenwerk-audit.log > ~/belege/log-zeile.txt
+[  193.1 s]   OK     grep sudoers.d /var/log/rechenwerk-audit.log > ~/belege/log-zeile.txt (11.5 s)
+[  193.6 s]   Tippe: grep -B1 nadia /etc/sudoers.d/rw-fernwartung > ~/belege/rechte-zeile.txt
+[  200.1 s]   OK     grep -B1 nadia /etc/sudoers.d/rw-fernwartung > ~/belege/rechte-zeile.txt (6.4 s)
+[  219.7 s]   OK     Antwort RW-1042 (0.0 s)
+[  220.8 s]   Tippe: ls -l /etc/sudoers.d/rw-fernwartung $(find /usr/local -perm -4000 -type f) > ~/belege/rechte-metadaten.txt
+[  226.9 s]   OK     ls -l /etc/sudoers.d/rw-fernwartung $(find /usr/local -perm -4000 -type f) > ~/belege/rechte-metadaten.txt (6.2 s)
+[  227.4 s]   Tippe: sudo mv /etc/sudoers.d/rw-fernwartung ~/quarantaene/
+[  233.9 s]   OK     sudo mv /etc/sudoers.d/rw-fernwartung ~/quarantaene/ (6.4 s)
+[  234.4 s]   Tippe: sudo mv /usr/local/bin/rw-status ~/quarantaene/
+[  240.7 s]   OK     sudo mv /usr/local/bin/rw-status ~/quarantaene/ (6.3 s)
+[  241.2 s]   FEHLER Speichern mit VM-Zustand (fehlt)
+[  245.8 s]   Vorwurf gegen nadia: FalschePerson
+[  246.9 s]   OK     Gegenprobe: falsche Person (1.0 s)
+[  252.0 s]   Vorwurf gegen timo: Richtig
+[  252.1 s]   OK     Vorwurf gegen timo (0.0 s)
+[  252.6 s]   Ermittlung: 46 fps im Mittel, 95 % der Bilder unter 42 ms (3266 Bilder)
+[  253.9 s]   OK     Episode 1 gelöst und in der Akte, Dauer 127 s Echtzeit
+[  255.4 s] Episode 3: Die Lücke im Log
+[  270.3 s]     Setup Rahmen: exit 0 nach 12.5 s
+[  279.1 s]     Setup Einsatzrahmen: exit 0 nach 8.8 s
+[  300.8 s]     Setup Episode: exit 0 nach 21.7 s
+[  300.8 s]   OK     Linux und Setup bereit nach 45.4 s (Linux-Start 2.2 s)
+[  300.8 s]   Laden: 52 fps im Mittel, 95 % der Bilder unter 34 ms (2504 Bilder)
+[  301.9 s]   Raum: 51 fps im Mittel, 95 % der Bilder unter 37 ms (53 Bilder)
+[  302.4 s]   Tippe: diff /var/log/rechenwerk-auth.log /srv/rechenwerk/log-spiegel/rechenwerk-auth.log | head -20
+[  311.7 s]   OK     Gegenprobe: falscher Zeitraum (1.0 s)
+[  316.4 s]   OK     Antwort 02:14-03:09 (0.0 s)
+[  317.4 s]   Tippe: grep -vxFf /var/log/rechenwerk-auth.log /srv/rechenwerk/log-spiegel/rechenwerk-auth.log > ~/belege/luecke-zeilen.txt
+[  324.8 s]   OK     grep -vxFf /var/log/rechenwerk-auth.log /srv/rechenwerk/log-spiegel/rechenwerk-auth.log > ~/belege/luecke-zeilen.txt (7.4 s)
+[  325.3 s]   Tippe: grep -vxFf /var/log/rechenwerk-auth.log /srv/rechenwerk/log-spiegel/rechenwerk-auth.log | cut -d' ' -f2 | sort | uniq -c > ~/belege/konten-zaehlung.txt
+[  334.5 s]   OK     grep -vxFf /var/log/rechenwerk-auth.log /srv/rechenwerk/log-spiegel/rechenwerk-auth.log | cut -d' ' -f2 | sort | uniq -c > ~/belege/konten-zaehlung.txt (9.1 s)
+[  335.0 s]   Tippe: mkdir -p ~/quarantaene && cp /srv/rechenwerk/wartung/bin/logkuerzen.sh ~/quarantaene/
+[  340.9 s]   OK     Gegenprobe: cp statt mv (5.9 s)
+[  341.4 s]   Tippe: rm ~/quarantaene/logkuerzen.sh && mv /srv/rechenwerk/wartung/bin/logkuerzen.sh ~/quarantaene/
+[  347.3 s]   OK     rm ~/quarantaene/logkuerzen.sh && mv /srv/rechenwerk/wartung/bin/logkuerzen.sh ~/quarantaene/ (5.9 s)
+[  347.8 s]   FEHLER Speichern mit VM-Zustand (fehlt)
+[  351.1 s]   Vorwurf gegen timo: FalschePerson
+[  352.1 s]   OK     Gegenprobe: falsche Person (1.0 s)
+[  357.8 s]   Vorwurf gegen nadia: Richtig
+[  357.8 s]   OK     Vorwurf gegen nadia (0.0 s)
+[  358.3 s]   Ermittlung: 48 fps im Mittel, 95 % der Bilder unter 36 ms (2698 Bilder)
+[  359.6 s]   OK     Episode 3 gelöst und in der Akte, Dauer 104 s Echtzeit
+[  361.2 s] Episode 2: Der Prozess, der nicht stirbt (Bildschirm-Image)
+[  395.2 s]     Setup Rahmen: exit 0 nach 30.8 s
+[  409.7 s]     Setup Einsatzrahmen: exit 0 nach 14.5 s
+[  468.4 s]     Setup Episode: exit 124 nach 58.7 s
+[  468.4 s]     Setup Episode Ausgabe: Terminated
+
+[  468.4 s]     Setup fehlgeschlagen: AgentException: Der Rahmen für Staffel 2 konnte nicht gesetzt werden.
+[  468.4 s]   FEHLER Linux und Setup bereit nach 107.3 s (Linux-Start 3.2 s): Der Rahmen für Staffel 2 konnte nicht gesetzt werden.
+[  468.4 s]   Laden: 47 fps im Mittel, 95 % der Bilder unter 39 ms (5211 Bilder)
+[  468.4 s] Ergebnis: 28 Prüfungen bestanden, 4 fehlgeschlagen.
+[  468.5 s] Ende. MIT FEHLERN. Bilder: 0

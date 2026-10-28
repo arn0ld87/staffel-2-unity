@@ -1,0 +1,31 @@
+[    7,1 s] Demo: Episoden 0, schnell, 1280×800, Microsoft Basic Render Driver, Qualität PC
+[   15,3 s] Hauptmenü: 1 fps im Mittel, 95 % der Bilder unter 3537 ms (4 Bilder)
+[   15,3 s] Episode 0: Probelauf
+[   35,1 s]     Setup Rahmen: exit 0 nach 11,3 s
+[   52,4 s]     Setup Einsatzrahmen: exit 0 nach 17,3 s
+[   71,3 s]     Setup Episode: exit 0 nach 19,0 s
+[   79,1 s]   OK     Linux und Setup bereit nach 63,8 s (Linux-Start 8,3 s)
+[   79,1 s]   Laden: 1 fps im Mittel, 95 % der Bilder unter 5459 ms (43 Bilder)
+[   89,0 s]   Raum: 1 fps im Mittel, 95 % der Bilder unter 2946 ms (6 Bilder)
+[   95,9 s]   Tippe: ls -l /srv/rechenwerk/uebung/kaffeekasse.csv /srv/rechenwerk/uebung/kaffeekasse.bak > ~/belege/kasse-meta.txt
+[  157,6 s]   FEHLER ls -l /srv/rechenwerk/uebung/kaffeekasse.csv /srv/rechenwerk/uebung/kaffeekasse.bak > ~/belege/kasse-meta.txt (61,7 s)
+[  157,6 s]     Letzte Pager-Meldung: Erster Einsatztag bei der Rechenwerk Ostwind GmbH. Bevor es ernst wird, ein Probelauf. Hier kann nichts kaputtgehen. Du bist das Testkonto azubi. Ein Beleg ist die echte Ausgabe eines Befehls, in eine Textdatei in ~/belege/ umgeleitet. Abgetippter Text zählt nicht. Geprüft wird beim nächsten Shell-Prompt. Wenn du in nano arbeitest, erst speichern und nano verlassen. Tipps gibt es auf Abruf in der Hilfe. Nutz sie ruhig. Der Fall: In /srv/rechenwerk/uebung/ liegen die Kaffeekasse-Liste kaffeekasse.csv und ihre Sicherung kaffeekasse.bak vom Abend davor. In der Liste wurde nachts ein Betrag verändert. Wer war es? Die Regel für jeden Fall: erst Belege sichern, dann reparieren. Wer vorher repariert, löscht den Beweis. Schritt 1: Halte Besitzer, Rechte und Datum beider Dateien in einem Beleg fest, als echte Ausgabe von ls -l: ~/belege/kasse-meta.txt.
+[  162,1 s]   Tippe: cat ~/belege/kasse-meta.txt
+[  189,2 s]   OK     Gegenprobe: falsche Antwort (8,8 s)
+[  257,2 s]   FEHLER Antwort kaffee (61,3 s)
+[  257,2 s]     Letzte Pager-Meldung: Erster Einsatztag bei der Rechenwerk Ostwind GmbH. Bevor es ernst wird, ein Probelauf. Hier kann nichts kaputtgehen. Du bist das Testkonto azubi. Ein Beleg ist die echte Ausgabe eines Befehls, in eine Textdatei in ~/belege/ umgeleitet. Abgetippter Text zählt nicht. Geprüft wird beim nächsten Shell-Prompt. Wenn du in nano arbeitest, erst speichern und nano verlassen. Tipps gibt es auf Abruf in der Hilfe. Nutz sie ruhig. Der Fall: In /srv/rechenwerk/uebung/ liegen die Kaffeekasse-Liste kaffeekasse.csv und ihre Sicherung kaffeekasse.bak vom Abend davor. In der Liste wurde nachts ein Betrag verändert. Wer war es? Die Regel für jeden Fall: erst Belege sichern, dann reparieren. Wer vorher repariert, löscht den Beweis. Schritt 1: Halte Besitzer, Rechte und Datum beider Dateien in einem Beleg fest, als echte Ausgabe von ls -l: ~/belege/kasse-meta.txt.
+[  266,6 s]   Tippe: grep 2026-04-15 /srv/rechenwerk/uebung/kaffeekasse.csv > ~/belege/kasse-zeilen.txt && grep 2026-04-15 /srv/rechenwerk/uebung/kaffeekasse.bak >> ~/belege/kasse-zeilen.txt
+[  278,4 s]   OK     grep 2026-04-15 /srv/rechenwerk/uebung/kaffeekasse.csv > ~/belege/kasse-zeilen.txt && grep 2026-04-15 /srv/rechenwerk/uebung/kaffeekasse.bak >> ~/belege/kasse-zeilen.txt (11,8 s)
+[  283,1 s]   Tippe: cp /srv/rechenwerk/uebung/kaffeekasse.bak /srv/rechenwerk/uebung/kaffeekasse.csv
+[  294,7 s]   OK     cp /srv/rechenwerk/uebung/kaffeekasse.bak /srv/rechenwerk/uebung/kaffeekasse.csv (11,6 s)
+[  301,8 s]   OK     Speichern mit VM-Zustand (15 MiB)
+[  304,4 s]   OK     Hauptmenü bietet Fortsetzen an
+[  316,0 s]   OK     Zustand nach Fortsetzen (Belege kasse-zeilen, Pager 4)
+[  358,3 s]   OK     Belegdateien in der fortgesetzten VM vorhanden
+[  376,8 s]   Vorwurf gegen kaffee: BelegUnbekannt
+[  438,4 s]   FEHLER Vorwurf gegen kaffee (61,7 s)
+[  438,5 s]     Letzte Pager-Meldung: Ein ausgewählter Beleg ist nicht mehr gültig. Aktualisiere die Aktenwand.
+[  443,2 s]   Ermittlung: 0 fps im Mittel, 95 % der Bilder unter 2562 ms (151 Bilder)
+[  464,2 s]   FEHLER Episode 0 gelöst und in der Akte, Dauer 449 s Echtzeit
+[  476,0 s] Ergebnis: 8 Prüfungen bestanden, 4 fehlgeschlagen.
+[  476,0 s] Ende. MIT FEHLERN. Bilder: 0

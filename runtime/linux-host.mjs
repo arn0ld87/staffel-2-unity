@@ -6,18 +6,26 @@
 //
 //   stdin  {"t":"in","d":"<base64>"}      Tastatur -> ttyS0 (Spielerterminal)
 //          {"t":"agent","line":"PING m1"} eine Zeile -> ttyS1 (mission-agent)
+//          {"t":"screen","on":true}       Grafischen Bildschirm (SVGA) abonnieren/abbestellen
+//          {"t":"mouse","x":N,"y":N,"w":N,"h":N,"buttons":N,"wheel":N} Maus -> v86-Bus
+//          {"t":"key","codes":[N,...]}    PS/2-Scancodes -> v86-Bus
+//          {"t":"save","path":"/..."}     VM-Zustand gzip-komprimiert in eine Datei schreiben
 //          {"t":"stop"}                   VM beenden, Prozess endet
 //   stdout {"t":"booting"} {"t":"started","ms":N}
+//          {"t":"saved","path":"...","bytes":N}
 //          {"t":"out","d":"<base64>"}     Ausgabe von ttyS0
 //          {"t":"agent","line":"RES ..."} eine Zeile von ttyS1
+//          {"t":"frame","w":N,"h":N,"d":"<base64-deflate-rgba>"} SVGA-Vollbild
 //          {"t":"error","message":"..."}
 //
 // Isolation: kein Netzwerkadapter (keine network_relay_url), das Dateisystem kommt aus
 // den mitgelieferten, inhaltsadressierten Image-Dateien; Schreibzugriffe der VM bleiben
 // im Speicher. Es gibt keinen Pfad, über den die VM Host-Dateien oder die Host-Shell
 // erreicht.
+import fs from 'node:fs';
 import path from 'node:path';
 import readline from 'node:readline';
+import zlib from 'node:zlib';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 import { V86 } from 'v86';
@@ -28,6 +36,8 @@ const { values } = parseArgs({
     assets: { type: 'string', default: path.join(HERE, 'assets', 'linux') },
     image: { type: 'string', default: 'terminal' },
     wasm: { type: 'string' },
+    // Gespeicherter Spielstand der VM (gzip), statt des Savestates aus dem Image.
+    state: { type: 'string' },
   },
 });
 
@@ -59,6 +69,17 @@ const imageDir = path.join(assets, image.dir);
 const startedAt = Date.now();
 send({ t: 'booting' });
 
+// v86 legt den SVGA-Zielpuffer in WASM nur an, wenn globalThis.ImageData existiert.
+if (typeof globalThis.ImageData === 'undefined') {
+  globalThis.ImageData = class ImageData {
+    constructor(data, width, height) {
+      this.data = data;
+      this.width = width;
+      this.height = height;
+    }
+  };
+}
+
 const emulator = new V86({
   bios: { url: path.join(assets, 'seabios.bin') },
   vga_bios: { url: path.join(assets, 'vgabios.bin') },
@@ -76,11 +97,102 @@ const emulator = new V86({
     baseurl: path.join(assets, 'alpine-rootfs-flat'),
     basefs: path.join(imageDir, 'alpine-fs.json'),
   },
-  initial_state: { url: path.join(imageDir, 'alpine-state.bin.zst') },
+  initial_state: values.state
+    ? { buffer: toArrayBuffer(zlib.gunzipSync(fs.readFileSync(values.state))) }
+    : { url: path.join(imageDir, 'alpine-state.bin.zst') },
 });
+
+function toArrayBuffer(buf) {
+  return buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength);
+}
+
+// Schreibt erst eine temporäre Datei und benennt dann um: ein Abbruch hinterlässt nie
+// einen halben Spielstand.
+async function saveState(target) {
+  const state = await emulator.save_state();
+  const packed = zlib.gzipSync(Buffer.from(state), { level: 6 });
+  const tmp = `${target}.tmp`;
+  fs.writeFileSync(tmp, packed);
+  fs.renameSync(tmp, target);
+  send({ t: 'saved', path: target, bytes: packed.length });
+}
+
+let screenEnabled = false;
+let screenInterval = null;
+let forceFullFrame = false;
+let frameDirty = false;
+let lastButtonsMask = 0;
+
+function attachScreenHook() {
+  const vga = emulator.v86?.cpu?.devices?.vga;
+  if (!vga) return null;
+  if (!vga._hookAttached) {
+    vga._hookAttached = true;
+    const origUpdate = vga.screen.update_buffer?.bind(vga.screen);
+    vga.screen.update_buffer = (layers) => {
+      if (origUpdate) origUpdate(layers);
+      if (layers && layers.length > 0 && layers[0].buffer_height > 0) {
+        frameDirty = true;
+      }
+    };
+  }
+  return vga;
+}
+
+function flushScreenFrame() {
+  if (!screenEnabled) return;
+  const vga = attachScreenHook();
+  if (!vga) return;
+  if (!vga.graphical_mode || !vga.svga_enabled) {
+    if (forceFullFrame) {
+      forceFullFrame = false;
+      send({ t: 'frame', w: 0, h: 0, d: '' });
+    }
+    return;
+  }
+  if (!vga.image_data || vga.image_data.data.byteLength === 0) {
+    vga.set_size_graphical(
+      vga.svga_width,
+      vga.svga_height,
+      vga.svga_width,
+      vga.svga_height,
+      vga.svga_bpp
+    );
+  }
+  if (forceFullFrame) {
+    vga.cpu.svga_mark_dirty();
+  }
+  frameDirty = false;
+  vga.screen_fill_buffer();
+  if (!frameDirty && !forceFullFrame) return;
+  forceFullFrame = false;
+  const img = vga.image_data;
+  if (!img || !img.data || img.data.byteLength === 0) return;
+  const raw = Buffer.from(img.data.buffer, img.data.byteOffset, img.data.byteLength);
+  const packed = zlib.deflateRawSync(raw, { level: 1 });
+  send({ t: 'frame', w: vga.svga_width, h: vga.svga_height, d: packed.toString('base64') });
+}
+
+function setScreenEnabled(on) {
+  screenEnabled = Boolean(on);
+  if (screenEnabled) {
+    forceFullFrame = true;
+    if (!screenInterval) {
+      screenInterval = setInterval(flushScreenFrame, 80);
+    }
+    flushScreenFrame();
+  } else if (screenInterval) {
+    clearInterval(screenInterval);
+    screenInterval = null;
+  }
+}
 
 emulator.add_listener('emulator-started', () => {
   send({ t: 'started', ms: Date.now() - startedAt });
+  if (screenEnabled) {
+    forceFullFrame = true;
+    flushScreenFrame();
+  }
 });
 
 // ttyS0: Bytes je Microtask bündeln, damit nicht jedes Zeichen eine JSON-Zeile wird.
@@ -111,6 +223,10 @@ emulator.add_listener('serial1-output-byte', (byte) => {
 
 function stop(code = 0) {
   try {
+    if (screenInterval) {
+      clearInterval(screenInterval);
+      screenInterval = null;
+    }
     emulator.destroy();
   } finally {
     process.exit(code);
@@ -130,6 +246,41 @@ input.on('line', (line) => {
     emulator.serial_send_bytes(0, Buffer.from(message.d, 'base64'));
   } else if (message.t === 'agent' && typeof message.line === 'string') {
     emulator.serial_send_bytes(1, new TextEncoder().encode(message.line.replace(/\n/g, '') + '\n'));
+  } else if (message.t === 'screen') {
+    setScreenEnabled(Boolean(message.on));
+  } else if (message.t === 'mouse') {
+    if (
+      typeof message.x === 'number' &&
+      typeof message.y === 'number' &&
+      typeof message.w === 'number' &&
+      typeof message.h === 'number' &&
+      message.w > 0 &&
+      message.h > 0
+    ) {
+      emulator.bus.send('mouse-absolute', [message.x, message.y, message.w, message.h]);
+    }
+    if (typeof message.dx === 'number' && typeof message.dy === 'number' && (message.dx !== 0 || message.dy !== 0)) {
+      emulator.bus.send('mouse-delta', [message.dx, message.dy]);
+    }
+    if (typeof message.buttons === 'number') {
+      const b = message.buttons | 0;
+      if (b !== lastButtonsMask) {
+        lastButtonsMask = b;
+        // Bit 0: Links, Bit 1: Rechts, Bit 2: Mitte -> v86 erwartet [links, mitte, rechts].
+        emulator.bus.send('mouse-click', [Boolean(b & 1), Boolean(b & 4), Boolean(b & 2)]);
+      }
+    }
+    if (typeof message.wheel === 'number' && message.wheel !== 0) {
+      emulator.bus.send('mouse-wheel', [Math.sign(message.wheel), 0]);
+    }
+  } else if (message.t === 'key' && Array.isArray(message.codes)) {
+    for (const code of message.codes) {
+      if (typeof code === 'number') {
+        emulator.bus.send('keyboard-code', code & 0xff);
+      }
+    }
+  } else if (message.t === 'save' && typeof message.path === 'string') {
+    saveState(message.path).catch((e) => send({ t: 'error', message: `Speichern fehlgeschlagen: ${e.message}` }));
   } else if (message.t === 'stop') {
     stop(0);
   }

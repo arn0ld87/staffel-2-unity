@@ -1,0 +1,9 @@
+{
+    "name": "Staffel2.World",
+    "rootNamespace": "Staffel2.World",
+    "references": [
+        "Unity.InputSystem",
+        "Unity.TextMeshPro"
+    ],
+    "autoReferenced": true
+}
