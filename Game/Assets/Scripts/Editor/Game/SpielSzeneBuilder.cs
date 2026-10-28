@@ -16,7 +16,7 @@ namespace Staffel2.Game.Editor
         public static string Alles()
         {
             Staffel2.World.Editor.SceneBuilder.BuildServerRoom();
-            string alex = AlexBuilder.Einrichten();
+            string alex = AlexBuilder.Einrichten() + " | " + AlexTrellisBuilder.Einrichten();
             var scene = EditorSceneManager.OpenScene(Szene);
             if (Object.FindFirstObjectByType<GameRoot>() == null) new GameObject("GameRoot").AddComponent<GameRoot>();
             EditorSceneManager.MarkSceneDirty(scene);

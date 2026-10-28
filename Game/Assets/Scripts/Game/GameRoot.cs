@@ -43,7 +43,7 @@ namespace Staffel2.Game
         private PlayerInteractor _interaktor;
         private RackStatusLights[] _racks = new RackStatusLights[0];
         private MonitorScreen _monitor;
-        private AlexFigur _raumAlex;
+        private AlexFigur[] _raumAlex = new AlexFigur[0];
         private SpielAudio _audio;
         private Bildschirme _ui;
         private float _naechstesAutosave;
@@ -75,8 +75,9 @@ namespace Staffel2.Game
             _interaktor = FindFirstObjectByType<PlayerInteractor>();
             _racks = FindObjectsByType<RackStatusLights>(FindObjectsSortMode.None);
             _monitor = FindFirstObjectByType<MonitorScreen>();
-            var raumAlexGo = GameObject.Find("AlexRaumFigur");
-            if (raumAlexGo != null) _raumAlex = raumAlexGo.GetComponent<AlexFigur>();
+            _raumAlex = new[] { "AlexRaumFigur", "AlexRaumFigurNeu" }
+                .Select(GameObject.Find).Where(go => go != null)
+                .Select(go => go.GetComponent<AlexFigur>()).Where(f => f != null).ToArray();
             foreach (var i in FindObjectsByType<Interactable>(FindObjectsSortMode.None)) i.Interacted += Interagiert;
 
             UiBaukasten.Schrift = Resources.Load<TMP_FontAsset>("Fonts/Inter SDF") ?? TMP_Settings.defaultFontAsset;
@@ -126,10 +127,10 @@ namespace Staffel2.Game
                 // Tippt man im Terminal, hört Alex zu (solange er nicht selbst spricht).
                 if (Ansicht == Ansicht.Terminal && kb != null && kb.anyKey.wasPressedThisFrame) Alex.Figur.Haltung(AlexHaltung.Zuhoeren, 2.5f);
             }
-            if (_raumAlex != null)
+            foreach (var raumAlex in _raumAlex)
             {
-                _raumAlex.BewegungReduziert = Einstellungen.BewegungReduziert;
-                if (Ansicht == Ansicht.Terminal && kb != null && kb.anyKey.wasPressedThisFrame) _raumAlex.Haltung(AlexHaltung.Zuhoeren, 2.5f);
+                raumAlex.BewegungReduziert = Einstellungen.BewegungReduziert;
+                if (Ansicht == Ansicht.Terminal && kb != null && kb.anyKey.wasPressedThisFrame) raumAlex.Haltung(AlexHaltung.Zuhoeren, 2.5f);
             }
             if (Sitzung != null && Sitzung.Bereit && Time.unscaledTime > _naechstesAutosave)
             {
@@ -310,10 +311,10 @@ namespace Staffel2.Game
                 Alex.Figur.Spreche(dauer);
                 Alex.Figur.Ausdruck(ausdruck);
             }
-            if (_raumAlex != null)
+            foreach (var raumAlex in _raumAlex)
             {
-                _raumAlex.Spreche(dauer);
-                _raumAlex.Ausdruck(ausdruck);
+                raumAlex.Spreche(dauer);
+                raumAlex.Ausdruck(ausdruck);
             }
         }
 
