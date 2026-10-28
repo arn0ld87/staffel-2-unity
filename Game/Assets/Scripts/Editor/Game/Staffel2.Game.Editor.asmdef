@@ -1,7 +1,14 @@
 {
     "name": "Staffel2.Game.Editor",
     "rootNamespace": "Staffel2.Game.Editor",
-    "references": ["Staffel2.Game", "Staffel2.World", "Staffel2.World.Editor"],
-    "includePlatforms": ["Editor"],
+    "references": [
+        "Staffel2.Game",
+        "Staffel2.World",
+        "Staffel2.World.Editor",
+        "Unity.TextMeshPro"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
     "autoReferenced": false
 }
