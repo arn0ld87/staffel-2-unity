@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace Staffel2.Game
 {
-    public enum AlexHaltung { Ruhe, Erklaeren, Zuhoeren }
+    public enum AlexHaltung { Ruhe, Erklaeren, Zuhoeren, Zeigen }
 
     /// <summary>
     /// Mimik und Haltung der Alex-Büste: zufälliges Blinzeln, Mundbewegung beim Sprechen,
@@ -24,6 +24,8 @@ namespace Staffel2.Game
         private float _neutralWert, _neutralZiel = 0.35f;
         private AlexHaltung _haltung = AlexHaltung.Ruhe;
         private float _haltungBis;
+        private Quaternion _grundDrehung;
+        private Vector3? _zeigeZiel;
 
         private void Awake()
         {
@@ -45,6 +47,7 @@ namespace Staffel2.Game
             }
             if (Mundraum != null) _mundraumAuf = Mundraum.sharedMesh.GetBlendShapeIndex("Mund_Auf");
             _naechstesBlinzeln = Time.time + Random.Range(1.5f, 4f);
+            _grundDrehung = transform.rotation;
             Haltung(AlexHaltung.Ruhe, 0f);
         }
 
@@ -58,14 +61,33 @@ namespace Staffel2.Game
         /// <summary>0 = Lächeln (Modell), 1 = ernst-neutral.</summary>
         public void Ausdruck(float neutral) => _neutralZiel = Mathf.Clamp01(neutral);
 
+        /// <summary>
+        /// Zeigt mit dem rechten Arm auf einen Punkt im Raum: dreht sich dafür um die Hochachse, bis die
+        /// rechte Seite zum Ziel weist, und kehrt danach in die Ausgangsdrehung zurück. Ohne Zeigen-Clip
+        /// (z. B. die Büste) passiert nichts.
+        /// </summary>
+        public void ZeigeAuf(Vector3 ziel, float dauer)
+        {
+            if (!HatZustand("Zeigen")) return;
+            _zeigeZiel = ziel;
+            _haltung = AlexHaltung.Ruhe;  // erzwingt den Wechsel, auch wenn er gerade erklärt
+            Haltung(AlexHaltung.Zeigen, dauer);
+        }
+
+        private bool HatZustand(string name) =>
+            Animator != null && Animator.runtimeAnimatorController != null && Animator.HasState(0, Animator.StringToHash(name));
+
         public void Haltung(AlexHaltung haltung, float dauer)
         {
             if (Animator == null || Animator.runtimeAnimatorController == null) return;
+            if (_haltung == AlexHaltung.Zeigen && haltung != AlexHaltung.Ruhe && Time.time < _haltungBis) return; // erst fertig zeigen
             if (haltung == AlexHaltung.Zuhoeren && Time.time < _sprichtBis) return; // erst ausreden
             if (haltung == _haltung && dauer > 0) { _haltungBis = Mathf.Max(_haltungBis, Time.time + dauer); return; }
             _haltung = haltung;
             _haltungBis = dauer > 0 ? Time.time + dauer : float.MaxValue;
-            string zustand = haltung == AlexHaltung.Erklaeren ? "Erklaeren" : haltung == AlexHaltung.Zuhoeren ? "Zuhoeren" : "Ruhe";
+            if (haltung != AlexHaltung.Zeigen) _zeigeZiel = null;
+            string zustand = haltung == AlexHaltung.Erklaeren ? "Erklaeren" : haltung == AlexHaltung.Zuhoeren ? "Zuhoeren"
+                : haltung == AlexHaltung.Zeigen ? "Zeigen" : "Ruhe";
             Animator.CrossFadeInFixedTime(zustand, 0.35f);
         }
 
@@ -73,6 +95,16 @@ namespace Staffel2.Game
         {
             if (_haltung != AlexHaltung.Ruhe && Time.time > _haltungBis) Haltung(AlexHaltung.Ruhe, 0f);
             if (Animator != null) Animator.speed = BewegungReduziert ? 0.5f : 1f;
+
+            // Zum Zeigen so drehen, dass die rechte Seite (Zeigearm) zum Ziel weist; sonst zurück.
+            Quaternion soll = _grundDrehung;
+            if (_zeigeZiel.HasValue)
+            {
+                var richtung = _zeigeZiel.Value - transform.position;
+                richtung.y = 0;
+                if (richtung.sqrMagnitude > 0.01f) soll = Quaternion.LookRotation(richtung) * Quaternion.Euler(0, -90f, 0);
+            }
+            transform.rotation = Quaternion.Slerp(transform.rotation, soll, 1f - Mathf.Exp(-4f * Time.deltaTime));
         }
 
         private void LateUpdate()

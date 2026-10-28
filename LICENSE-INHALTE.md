@@ -12,6 +12,7 @@ Der Quellcode steht unter der MIT-Lizenz (`LICENSE`). Für die Inhalte gelten zw
 | Episodentexte, Aufgaben, Hinweise und Figurentexte | `Game/Assets/StreamingAssets/staffel2/staffel2.json`, `core/staffel2.fixture.json` |
 | Figurenporträts (erzeugt mit Google Gemini) | `Game/Assets/StreamingAssets/staffel2/bilder/*.webp` |
 | Poster- und Banner-Grafiken im Serverraum (erzeugt mit Google Gemini) | `Game/Assets/Art/Brand/` |
+| Zweite Alex-Figur aus TRELLIS (Modell, Textur, Rig, Clips, Material, Prefab) und ihre Vorlagen | `Game/Assets/Art/Alex/Alex_Trellis*`, `Game/Assets/Resources/Alex/AlexTrellis.*`, `art-source/alex/trellis/`, `art-source/alex/referenz/` |
 | Selbst erzeugte Klänge | `Game/Assets/Resources/Audio/rack_luefter.wav`, `Game/Assets/Resources/Audio/ermittlung_teppich.wav` |
 
 **Namensnennung**, z. B.: „Ein Linux-Krimi – Staffel 2“ von Alexander Schneider (alex-schneider.dev), CC BY-SA 4.0.
@@ -26,8 +27,8 @@ und ihre Ableitungen nur für **nicht kommerzielle** Zwecke unter
 
 | Inhalt | Pfad |
 |---|---|
-| Alex-Büste bzw. -Figur, Texturen, Material, Prefab | `Game/Assets/Art/Alex/`, `Game/Assets/Resources/Alex/` |
-| Quelldateien der Figur (Blender-Projekt, Ausgangs-FBX) | `art-source/alex/` |
+| Alex-Büste bzw. -Figur, Texturen, Material, Prefab (ausgenommen die `Alex_Trellis*`- und `AlexTrellis.*`-Dateien, siehe oben) | `Game/Assets/Art/Alex/`, `Game/Assets/Resources/Alex/` |
+| Quelldateien der Figur (Blender-Projekt, Ausgangs-FBX) | `art-source/alex/` ohne `trellis/` und `referenz/` |
 | Renderings, Standbilder und Demo-Video (zeigen die Figur) | `docs/alex/`, `docs/demo/` |
 
 **Namensnennung**, z. B.: Alex-Figur aus „Ein Linux-Krimi – Staffel 2“ von Alexander Schneider (alex-schneider.dev),

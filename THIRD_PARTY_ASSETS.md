@@ -35,6 +35,7 @@ Diese Datei dokumentiert alle im Projekt „Ein Linux-Krimi – Staffel 2“ ver
 |---|---|---|---|
 | Ganzkörper-Alex (Körper, Rig, Clips) | Alexander Schneider, erstellt mit Google Gemini über `tools/blender/alex_ganzkoerper_live.py` auf Basis der Tripo-Büste | CC BY-NC-SA 4.0 (abgeleitet von der Tripo-Büste) | `Game/Assets/Art/Alex/Alex_Bueste.fbx`, `Alex_Body_BaseColor.png`, `art-source/alex/` |
 | Proportionsvorlage `alexander-ganz-zeigt.webp` | Alexander Schneider | nicht im Repo; Pfad per `ALEX_VORLAGE` | — |
+| Zweiter Alex (TRELLIS) | Vorlagen: Zeichnungen von Alexander Schneider, erzeugt mit Google Gemini (`art-source/alex/referenz/`); 3D-Modell erzeugt mit TRELLIS (Microsoft, MIT-Lizenz, Space `trellis-community/TRELLIS` auf Hugging Face); Gesicht, Rig und Clips über `tools/blender/alex_trellis_gesicht.py` und `alex_trellis_rig.py` | CC BY-SA 4.0 (keine Tripo-Anteile) | `Game/Assets/Art/Alex/Alex_Trellis*`, `art-source/alex/trellis/` |
 | Poster- und Banner-Grafiken | Alexander Schneider, erzeugt mit Google Gemini | CC BY-SA 4.0; Name/Domain alex-schneider.dev nicht lizenziert | `Game/Assets/Art/Brand/` |
 
 ---
