@@ -208,6 +208,9 @@ namespace Staffel2.Game
             };
             _ui.Hud.Pager(nachricht);
             AlexReagiert(nachricht);
+            // Gibt es einen offenen Schritt, zeigt Alex auf den Arbeitsplatz-Monitor: dort geht es weiter.
+            if (Sitzung != null && _monitor != null && !zeile.StartsWith("Alex: Alle Spuren"))
+                foreach (var raumAlex in _raumAlex) raumAlex.ZeigeAuf(_monitor.transform.position, 2.6f);
         }
 
         /// <summary>Was der Serverschrank zeigt, kommt aus dem echten Spielzustand.</summary>

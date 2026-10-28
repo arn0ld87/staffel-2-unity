@@ -67,8 +67,8 @@ stirn = [v for v in bm.verts
          if kinn + kopf_h * 0.62 < (W @ v.co).z < kinn + kopf_h * 0.86
          and abs((W @ v.co).x - mitte_x) < (ohr_r - ohr_l) * 0.30 and (W.to_3x3() @ v.normal).y < -0.3
          and v.is_manifold and not v.is_boundary]
-for _ in range(6):
-    bmesh.ops.smooth_vert(bm, verts=stirn, factor=0.5, use_axis_x=False, use_axis_y=True, use_axis_z=False)
+for _ in range(20):
+    bmesh.ops.smooth_vert(bm, verts=stirn, factor=0.5, use_axis_x=True, use_axis_y=True, use_axis_z=True)
 bm.to_mesh(me); bm.free(); me.update()
 print("STIRN geglaettet", len(stirn))
 

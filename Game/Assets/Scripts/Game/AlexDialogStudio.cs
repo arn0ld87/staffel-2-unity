@@ -16,8 +16,9 @@ namespace Staffel2.Game
         private void Awake()
         {
             transform.position = new Vector3(0, -200, 0);
-            var prefab = Resources.Load<GameObject>("Alex/AlexDialog");
-            if (prefab == null) { Debug.LogWarning("AlexDialog-Prefab fehlt (Resources/Alex/AlexDialog)."); return; }
+            // Ganzkörper-Alex (TRELLIS); die ältere Büste nur, falls er fehlt.
+            var prefab = Resources.Load<GameObject>("Alex/AlexTrellis") ?? Resources.Load<GameObject>("Alex/AlexDialog");
+            if (prefab == null) { Debug.LogWarning("Alex-Prefab fehlt (Resources/Alex/AlexTrellis bzw. AlexDialog)."); return; }
 
             var alex = Instantiate(prefab, transform);
             alex.transform.localPosition = Vector3.zero;
@@ -28,7 +29,13 @@ namespace Staffel2.Game
 
             // Kamera auf Kopf und Schultern (Gesicht-Mesh statt Ganzkörper, damit Pager/Terminal ein Porträt zeigen).
             Bounds grenzen;
-            if (Figur != null && Figur.Gesicht != null)
+            var kopf = KnochenSuchen(alex.transform, "Head");
+            if (kopf != null)
+            {
+                // Ganzkörperfigur: Kopf und Schultern um den Kopfknochen (Gesichtshöhe etwas darüber).
+                grenzen = new Bounds(kopf.position + Vector3.up * 0.08f, new Vector3(0.4f, 0.42f, 0.3f));
+            }
+            else if (Figur != null && Figur.Gesicht != null)
             {
                 grenzen = Figur.Gesicht.bounds;
             }
@@ -59,9 +66,11 @@ namespace Staffel2.Game
             // Warmes Führungslicht und orange Kante, nur für die Dialog-Ebene.
             // Die Textur ist gemalt und bringt ihre Schattierung mit: helles, fast neutrales Licht,
             // Orange nur als schmale Kante.
-            Licht("Fuehrung", ziel + new Vector3(0.7f, 0.6f, 1.6f) * h, new Color(1f, 0.97f, 0.92f), 4.2f, h * 5f);
-            Licht("Fuell", ziel + new Vector3(-0.9f, 0.1f, 1.4f) * h, new Color(0.9f, 0.93f, 1f), 2.2f, h * 5f);
-            Licht("Kante", ziel + new Vector3(-1.2f, 0.7f, -1f) * h, new Color(0.86f, 0.29f, 0.15f), 2.0f, h * 4f);
+            // Die Ganzkörper-Textur ist heller gemalt als die Büste: Licht dort deutlich zurücknehmen.
+            float s = kopf != null ? 0.18f : 1f;
+            Licht("Fuehrung", ziel + new Vector3(0.7f, 0.6f, 1.6f) * h, new Color(1f, 0.97f, 0.92f), 4.2f * s, h * 5f);
+            Licht("Fuell", ziel + new Vector3(-0.9f, 0.1f, 1.4f) * h, new Color(0.9f, 0.93f, 1f), 2.2f * s, h * 5f);
+            Licht("Kante", ziel + new Vector3(-1.2f, 0.7f, -1f) * h, new Color(0.86f, 0.29f, 0.15f), 2.0f * s * 1.5f, h * 4f);
         }
 
         private void Licht(string name, Vector3 pos, Color farbe, float staerke, float reichweite)
@@ -76,6 +85,17 @@ namespace Staffel2.Game
             l.range = reichweite;
             l.cullingMask = 1 << Ebene;
             l.shadows = LightShadows.None;
+        }
+
+        private static Transform KnochenSuchen(Transform t, string name)
+        {
+            if (t.name == name) return t;
+            foreach (Transform kind in t)
+            {
+                var treffer = KnochenSuchen(kind, name);
+                if (treffer != null) return treffer;
+            }
+            return null;
         }
 
         private static void SetzeEbene(Transform t)

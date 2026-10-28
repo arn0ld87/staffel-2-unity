@@ -96,30 +96,20 @@ namespace Staffel2.Game.Editor
             PrefabUtility.SaveAsPrefabAsset(inst, Prefab);
             Object.DestroyImmediate(inst);
 
-            // Lebensgroße 3D-Figur von Alex (1,80 m) direkt im Serverraum platzieren (ansprechbar mit E).
+            // Im Raum steht nur noch die TRELLIS-Figur (AlexTrellisBuilder); ältere Raumfiguren entfernen.
             var scene = EditorSceneManager.OpenScene("Assets/Scenes/Serverraum.unity");
             foreach (var name in new[] { "AlexPlatzhalter", "Kollision_Alex", "AlexRaumFigur" })
             {
                 var alt = GameObject.Find(name);
                 if (alt != null) Object.DestroyImmediate(alt);
             }
-            var prefabAsset = AssetDatabase.LoadAssetAtPath<GameObject>(Prefab);
-            var raumAlex = (GameObject)PrefabUtility.InstantiatePrefab(prefabAsset);
-            raumAlex.name = "AlexRaumFigur";
-            raumAlex.transform.position = new Vector3(1.55f, 0f, -0.15f);
-            raumAlex.transform.rotation = Quaternion.Euler(0f, -142f, 0f);
-            var col = raumAlex.AddComponent<BoxCollider>();
-            col.center = new Vector3(0f, 0.90f, 0f);
-            col.size = new Vector3(0.55f, 1.80f, 0.45f);
-            var inter = raumAlex.AddComponent<Staffel2.World.Interactable>();
-            inter.Configure("alex", "E – Mit Alex sprechen", raumAlex.GetComponentsInChildren<Renderer>());
 
             EditorSceneManager.MarkSceneDirty(scene);
             EditorSceneManager.SaveScene(scene);
 
             AssetDatabase.SaveAssets();
             var smr = AssetDatabase.LoadAllAssetsAtPath(Fbx).OfType<Mesh>().Select(m => $"{m.name}:{m.blendShapeCount}");
-            return $"Clips: {string.Join(", ", animClips.Select(c => c.name))} | Meshes: {string.Join(", ", smr)} | AlexRaumFigur platziert";
+            return $"Clips: {string.Join(", ", animClips.Select(c => c.name))} | Meshes: {string.Join(", ", smr)} | alte Raumfigur entfernt";
         }
 
         private static string Kurzname(string take) =>
