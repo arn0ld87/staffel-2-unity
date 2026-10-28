@@ -228,7 +228,8 @@ namespace Staffel2.World.Editor
             var ordner = new GameObject("Poster_AlexSchneiderDev").transform;
             ordner.SetParent(root, false);
 
-            EnsureDarkBrandBanner("Assets/Art/Brand/alex-schneider-dev-banner.png");
+            // Feste Spielschrift statt dynamischer Standardschrift: der Atlas wächst sonst bei jedem Lauf.
+            var schrift = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>("Assets/Resources/Fonts/JetBrainsMono SDF.asset");
 
             Transform Poster(string name, string texPath, Vector3 pos, Vector3 lookDir, float breite, float hoehe, string untertitel)
             {
@@ -260,6 +261,7 @@ namespace Staffel2.World.Editor
                     labelGo.transform.SetParent(halter, false);
                     labelGo.transform.localPosition = new Vector3(0, -hoehe * 0.5f + 0.055f, -0.022f);
                     var tmp = labelGo.AddComponent<TextMeshPro>();
+                    if (schrift != null) tmp.font = schrift;
                     tmp.rectTransform.sizeDelta = new Vector2(breite * 0.92f, 0.10f);
                     tmp.text = untertitel;
                     tmp.alignment = TextAlignmentOptions.Center;
@@ -275,13 +277,14 @@ namespace Staffel2.World.Editor
             // 1. Hauptbanner alex-schneider.dev an der Ostwand direkt über dem Arbeitsplatz (Blick nach +X, Normal -X)
             var haupt = Poster("Banner_AlexSchneiderDev", "Assets/Art/Brand/alex-schneider-dev-banner.png",
                 new Vector3(RoomW / 2 - 0.025f, 2.05f, -1.8f), Vector3.right, 1.55f, 0.72f,
-                "LINUX · CLOUD · KI-ARCHITEKTUR");
+                null);
             if (haupt != null)
             {
                 var titelGo = new GameObject("DomainTitel");
                 titelGo.transform.SetParent(haupt, false);
                 titelGo.transform.localPosition = new Vector3(0.10f, 0.05f, -0.023f);
                 var tmp = titelGo.AddComponent<TextMeshPro>();
+                if (schrift != null) tmp.font = schrift;
                 tmp.rectTransform.sizeDelta = new Vector2(1.20f, 0.28f);
                 tmp.text = "alex-schneider.dev";
                 tmp.alignment = TextAlignmentOptions.Center;
@@ -306,39 +309,6 @@ namespace Staffel2.World.Editor
             Poster("Poster_PodmanDocker", "Assets/Art/Brand/podman-docker.png",
                 new Vector3(RoomW / 2 - 0.025f, 1.78f, 1.2f), Vector3.right, 1.35f, 0.76f,
                 "alex-schneider.dev · PODMAN & DOCKER");
-        }
-
-        /// <summary>Ersetzt weißen SVG-Rasterhintergrund im Hauptbanner durch dunkles Anthrazit (#181a15).</summary>
-        static void EnsureDarkBrandBanner(string assetPath)
-        {
-            var fullPath = Path.Combine(Directory.GetCurrentDirectory(), assetPath);
-            if (!File.Exists(fullPath)) return;
-            var raw = File.ReadAllBytes(fullPath);
-            var tex = new Texture2D(2, 2, TextureFormat.RGBA32, false);
-            if (!tex.LoadImage(raw))
-            {
-                UnityEngine.Object.DestroyImmediate(tex);
-                return;
-            }
-            var corner = tex.GetPixel(4, 4);
-            if (corner.r < 0.85f || corner.g < 0.85f || corner.b < 0.85f)
-            {
-                UnityEngine.Object.DestroyImmediate(tex);
-                return;
-            }
-            var pixels = tex.GetPixels32();
-            var bg = new Color32(24, 26, 21, 255);
-            for (var i = 0; i < pixels.Length; i++)
-            {
-                var p = pixels[i];
-                if (p.r > 235 && p.g > 235 && p.b > 235)
-                    pixels[i] = bg;
-            }
-            tex.SetPixels32(pixels);
-            tex.Apply();
-            File.WriteAllBytes(fullPath, tex.EncodeToPNG());
-            UnityEngine.Object.DestroyImmediate(tex);
-            AssetDatabase.ImportAsset(assetPath, ImportAssetOptions.ForceUpdate);
         }
 
         /// <summary>Doppelboden: Fugen im 0,6-m-Raster, im kalten Gang gelochte Gitterkacheln.</summary>

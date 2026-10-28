@@ -189,7 +189,7 @@ namespace Staffel2.Game
             string zeile;
             if (Sitzung == null)
             {
-                zeile = "Alex: Willkommen im Serverraum! Starte eine Ermittlung am Terminal (E).";
+                zeile = "Alex: Willkommen im Serverraum! Eine Episode startest du im Hauptmenü.";
             }
             else
             {

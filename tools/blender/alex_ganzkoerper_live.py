@@ -25,14 +25,17 @@ import os
 from mathutils import Euler, Matrix, Vector
 import numpy as np
 
-PROJEKT_WURZEL = "/Volumes/T7/Projekte/staffel-2-unity"
+PROJEKT_WURZEL = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".."))
 ART_ORDNER = os.path.join(PROJEKT_WURZEL, "Game/Assets/Art/Alex")
-ORIGINAL_FBX = os.path.join(ART_ORDNER, "Alex_Bueste_KopfOriginal.fbx")
+# Quelldateien liegen außerhalb von Assets/, damit Unity sie nicht importiert (.blend bräuchte ein installiertes Blender).
+QUELL_ORDNER = os.path.join(PROJEKT_WURZEL, "art-source/alex")
+ORIGINAL_FBX = os.path.join(QUELL_ORDNER, "Alex_Bueste_KopfOriginal.fbx")
 ZIEL_FBX = os.path.join(ART_ORDNER, "Alex_Bueste.fbx")
-ZIEL_BLEND = os.path.join(ART_ORDNER, "Alex_Ganzkoerper.blend")
+ZIEL_BLEND = os.path.join(QUELL_ORDNER, "Alex_Ganzkoerper.blend")
 KOERPER_TEXTUR_PFAD = os.path.join(ART_ORDNER, "Alex_Body_BaseColor.png")
 KOPF_TEXTUR_PFAD = os.path.join(ART_ORDNER, "Alex_BaseColor.png")
-WEBP_VORLAGE = "/Volumes/T7/Projekte/alexle-vsco/public/missions/figur/alexander-ganz-zeigt.webp"
+# Zeichnung als Proportionsvorlage; nicht im Repo. Pfad per Umgebungsvariable ALEX_VORLAGE.
+WEBP_VORLAGE = os.environ.get("ALEX_VORLAGE", os.path.join(QUELL_ORDNER, "alexander-ganz-zeigt.webp"))
 DOCS_RENDER = os.path.join(PROJEKT_WURZEL, "docs/alex/ganzkoerper_uebersicht.png")
 
 # Exakte Kalibrierung zwischen Alex_Bueste_KopfOriginal.fbx (ly = 0..1) und alexander-ganz-zeigt.webp:
