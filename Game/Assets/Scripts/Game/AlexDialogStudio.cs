@@ -26,11 +26,20 @@ namespace Staffel2.Game
             Figur = alex.GetComponent<AlexFigur>();
             if (Figur == null) Figur = alex.AddComponent<AlexFigur>();
 
-            // Kamera auf Kopf und Schultern; Maße aus den Renderer-Grenzen.
-            var grenzen = new Bounds(alex.transform.position, Vector3.zero);
-            foreach (var r in alex.GetComponentsInChildren<Renderer>()) grenzen.Encapsulate(r.bounds);
-            float h = Mathf.Max(0.3f, grenzen.size.y);
-            Vector3 ziel = grenzen.center + Vector3.up * h * 0.12f;
+            // Kamera auf Kopf und Schultern (Gesicht-Mesh statt Ganzkörper, damit Pager/Terminal ein Porträt zeigen).
+            Bounds grenzen;
+            if (Figur != null && Figur.Gesicht != null)
+            {
+                grenzen = Figur.Gesicht.bounds;
+            }
+            else
+            {
+                grenzen = new Bounds(alex.transform.position + Vector3.up * 1.5f, new Vector3(0.4f, 0.55f, 0.4f));
+                foreach (var r in alex.GetComponentsInChildren<Renderer>())
+                    if (r.name.Contains("Bust")) grenzen = r.bounds;
+            }
+            float h = Mathf.Clamp(grenzen.size.y, 0.35f, 0.65f);
+            Vector3 ziel = grenzen.center + Vector3.up * h * 0.10f;
 
             Bild = new RenderTexture(640, 800, 24) { name = "AlexDialogBild", antiAliasing = 4 };
             var camGo = new GameObject("AlexKamera");

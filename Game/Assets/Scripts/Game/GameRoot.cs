@@ -43,6 +43,7 @@ namespace Staffel2.Game
         private PlayerInteractor _interaktor;
         private RackStatusLights[] _racks = new RackStatusLights[0];
         private MonitorScreen _monitor;
+        private AlexFigur _raumAlex;
         private SpielAudio _audio;
         private Bildschirme _ui;
         private float _naechstesAutosave;
@@ -74,6 +75,8 @@ namespace Staffel2.Game
             _interaktor = FindFirstObjectByType<PlayerInteractor>();
             _racks = FindObjectsByType<RackStatusLights>(FindObjectsSortMode.None);
             _monitor = FindFirstObjectByType<MonitorScreen>();
+            var raumAlexGo = GameObject.Find("AlexRaumFigur");
+            if (raumAlexGo != null) _raumAlex = raumAlexGo.GetComponent<AlexFigur>();
             foreach (var i in FindObjectsByType<Interactable>(FindObjectsSortMode.None)) i.Interacted += Interagiert;
 
             UiBaukasten.Schrift = Resources.Load<TMP_FontAsset>("Fonts/Inter SDF") ?? TMP_Settings.defaultFontAsset;
@@ -123,6 +126,11 @@ namespace Staffel2.Game
                 // Tippt man im Terminal, hört Alex zu (solange er nicht selbst spricht).
                 if (Ansicht == Ansicht.Terminal && kb != null && kb.anyKey.wasPressedThisFrame) Alex.Figur.Haltung(AlexHaltung.Zuhoeren, 2.5f);
             }
+            if (_raumAlex != null)
+            {
+                _raumAlex.BewegungReduziert = Einstellungen.BewegungReduziert;
+                if (Ansicht == Ansicht.Terminal && kb != null && kb.anyKey.wasPressedThisFrame) _raumAlex.Haltung(AlexHaltung.Zuhoeren, 2.5f);
+            }
             if (Sitzung != null && Sitzung.Bereit && Time.unscaledTime > _naechstesAutosave)
             {
                 _naechstesAutosave = Time.unscaledTime + 120f;
@@ -170,7 +178,35 @@ namespace Staffel2.Game
                 case "serverschrank":
                     _ui.Hud.Meldung(Sitzung == null ? "Der Schrank ist zu." : SchrankText());
                     break;
+                case "alex":
+                    SprichMitAlexImRaum();
+                    break;
             }
+        }
+
+        private void SprichMitAlexImRaum()
+        {
+            string zeile;
+            if (Sitzung == null)
+            {
+                zeile = "Alex: Willkommen im Serverraum! Eine Episode startest du im Hauptmenü.";
+            }
+            else
+            {
+                var offeneSpur = Sitzung.Ermittlung.Spuren.FirstOrDefault(s => Sitzung.AktuellerSchritt(s) != null);
+                var schritt = offeneSpur != null ? Sitzung.AktuellerSchritt(offeneSpur) : null;
+                string hinweis = schritt != null ? (schritt.Pager?.FirstOrDefault() ?? schritt.Title) : null;
+                zeile = hinweis != null
+                    ? $"Alex ({offeneSpur.Titel}): {hinweis}"
+                    : "Alex: Alle Spuren stehen! Jetzt kannst du in der Fallakte (F) den Vorwurf erheben.";
+            }
+            var nachricht = new PagerNachricht
+            {
+                Art = "auftrag",
+                Zeilen = new System.Collections.Generic.List<string> { zeile },
+            };
+            _ui.Hud.Pager(nachricht);
+            AlexReagiert(nachricht);
         }
 
         /// <summary>Was der Serverschrank zeigt, kommt aus dem echten Spielzustand.</summary>
@@ -264,14 +300,21 @@ namespace Staffel2.Game
         /// <summary>Alex spricht so lange, wie der Pager-Text in der Webversion zum Erscheinen braucht.</summary>
         private void AlexReagiert(PagerNachricht n)
         {
-            var figur = Alex?.Figur;
-            if (figur == null) return;
             var takt = Daten.PagerTakt;
             int zeichen = n.Zeilen.Sum(z => z.Length);
             float dauer = (zeichen * (takt?.MsJeZeichen ?? 12) + n.Zeilen.Count * (takt?.MsJeZeile ?? 200)) / 1000f;
-            figur.Spreche(dauer);
             bool ernst = Sitzung != null && (Sitzung.Zustand.EinsatzrahmenVerletzt || ErmittlungsEngine.IstGesperrt(Sitzung.Zustand));
-            figur.Ausdruck(ernst ? 1f : n.Art == "erledigt" || n.Art == "szene" ? 0f : 0.45f);
+            float ausdruck = ernst ? 1f : n.Art == "erledigt" || n.Art == "szene" ? 0f : 0.45f;
+            if (Alex?.Figur != null)
+            {
+                Alex.Figur.Spreche(dauer);
+                Alex.Figur.Ausdruck(ausdruck);
+            }
+            if (_raumAlex != null)
+            {
+                _raumAlex.Spreche(dauer);
+                _raumAlex.Ausdruck(ausdruck);
+            }
         }
 
         private async Task AbschliessenAsync(AkteEintrag eintrag)

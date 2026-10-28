@@ -7,6 +7,11 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
+      name: Alex_Body_Mat
+    second: {fileID: 2100000, guid: f32ee891f77064b8c86740c5b2e2e13f, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
       name: Alex_MatteComic
     second: {fileID: 2100000, guid: 89e2381cdc4cd4cb1bbb1922c822b1fa, type: 2}
   materials:
@@ -37,11 +42,11 @@ ModelImporter:
     extraUserProperties: []
     clipAnimations:
     - serializedVersion: 16
-      name: Explain
-      takeName: Alex_Rig|Alex_Explain
-      internalID: 3157822043505839433
+      name: Idle
+      takeName: Alex_Idle
+      internalID: 2493712942097821371
       firstFrame: 0
-      lastFrame: 48
+      lastFrame: 89
       wrapMode: 0
       orientationOffsetY: 0
       level: 0
@@ -66,11 +71,11 @@ ModelImporter:
       maskSource: {instanceID: 0}
       additiveReferencePoseFrame: 0
     - serializedVersion: 16
-      name: Idle
-      takeName: Alex_Rig|Alex_Idle
-      internalID: 3278417297807460124
+      name: Explain
+      takeName: Alex_Explain
+      internalID: -7322225650371400567
       firstFrame: 0
-      lastFrame: 96
+      lastFrame: 59
       wrapMode: 0
       orientationOffsetY: 0
       level: 0
@@ -96,10 +101,10 @@ ModelImporter:
       additiveReferencePoseFrame: 0
     - serializedVersion: 16
       name: Listening
-      takeName: Alex_Rig|Alex_Listening
-      internalID: 6906092514590590632
+      takeName: Alex_Listening
+      internalID: 6265630158939389173
       firstFrame: 0
-      lastFrame: 48
+      lastFrame: 79
       wrapMode: 0
       orientationOffsetY: 0
       level: 0

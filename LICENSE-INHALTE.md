@@ -11,6 +11,7 @@ Der Quellcode steht unter der MIT-Lizenz (`LICENSE`). Für die Inhalte gelten zw
 |---|---|
 | Episodentexte, Aufgaben, Hinweise und Figurentexte | `Game/Assets/StreamingAssets/staffel2/staffel2.json`, `core/staffel2.fixture.json` |
 | Figurenporträts (erzeugt mit Google Gemini) | `Game/Assets/StreamingAssets/staffel2/bilder/*.webp` |
+| Poster- und Banner-Grafiken im Serverraum (erzeugt mit Google Gemini) | `Game/Assets/Art/Brand/` |
 | Selbst erzeugte Klänge | `Game/Assets/Resources/Audio/rack_luefter.wav`, `Game/Assets/Resources/Audio/ermittlung_teppich.wav` |
 
 **Namensnennung**, z. B.: „Ein Linux-Krimi – Staffel 2“ von Alexander Schneider (alex-schneider.dev), CC BY-SA 4.0.
@@ -26,6 +27,7 @@ und ihre Ableitungen nur für **nicht kommerzielle** Zwecke unter
 | Inhalt | Pfad |
 |---|---|
 | Alex-Büste bzw. -Figur, Texturen, Material, Prefab | `Game/Assets/Art/Alex/`, `Game/Assets/Resources/Alex/` |
+| Quelldateien der Figur (Blender-Projekt, Ausgangs-FBX) | `art-source/alex/` |
 | Renderings, Standbilder und Demo-Video (zeigen die Figur) | `docs/alex/`, `docs/demo/` |
 
 **Namensnennung**, z. B.: Alex-Figur aus „Ein Linux-Krimi – Staffel 2“ von Alexander Schneider (alex-schneider.dev),
@@ -36,6 +38,11 @@ Ausgangsmodell erstellt mit Tripo AI, CC BY-NC-SA 4.0.
 Die Figur zeigt eine echte Person. Die CC-4.0-Lizenzen räumen ausdrücklich keine Persönlichkeitsrechte ein
 (Lizenztext, Abschnitt 2(b)(1)). Wer die Figur nutzt, darf nicht den Eindruck erwecken, Alexander Schneider empfehle ein
 Produkt, eine Meinung oder eine Organisation, und darf das Abbild nicht in ehrverletzenden Zusammenhängen verwenden.
+
+## Marken
+
+Die Lizenzen gelten für die Grafiken, nicht für Name und Domain „alex-schneider.dev“: Wer die Grafiken weiterverwendet,
+darf damit nicht den Eindruck eines Angebots von Alexander Schneider erwecken.
 
 ## Ausgenommen
 

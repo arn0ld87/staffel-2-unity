@@ -29,6 +29,16 @@ Diese Datei dokumentiert alle im Projekt „Ein Linux-Krimi – Staffel 2“ ver
 
 ---
 
+## 2c. Ganzkörper-Figur und Poster
+
+| Asset | Quelle | Lizenz / Status | Verwendete Dateien |
+|---|---|---|---|
+| Ganzkörper-Alex (Körper, Rig, Clips) | Alexander Schneider, erstellt mit Google Gemini über `tools/blender/alex_ganzkoerper_live.py` auf Basis der Tripo-Büste | CC BY-NC-SA 4.0 (abgeleitet von der Tripo-Büste) | `Game/Assets/Art/Alex/Alex_Bueste.fbx`, `Alex_Body_BaseColor.png`, `art-source/alex/` |
+| Proportionsvorlage `alexander-ganz-zeigt.webp` | Alexander Schneider | nicht im Repo; Pfad per `ALEX_VORLAGE` | — |
+| Poster- und Banner-Grafiken | Alexander Schneider, erzeugt mit Google Gemini | CC BY-SA 4.0; Name/Domain alex-schneider.dev nicht lizenziert | `Game/Assets/Art/Brand/` |
+
+---
+
 ## 3. Audio und Klänge
 
 ### 3.1 Kenney Audio Packs (CC0 1.0 Universal)

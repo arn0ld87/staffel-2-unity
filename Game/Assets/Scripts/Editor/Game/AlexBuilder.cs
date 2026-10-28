@@ -17,7 +17,9 @@ namespace Staffel2.Game.Editor
     {
         private const string Fbx = "Assets/Art/Alex/Alex_Bueste.fbx";
         private const string Textur = "Assets/Art/Alex/Alex_BaseColor.png";
+        private const string KoerperTextur = "Assets/Art/Alex/Alex_Body_BaseColor.png";
         private const string Material = "Assets/Art/Alex/Alex_Comic.mat";
+        private const string KoerperMaterial = "Assets/Art/Alex/Alex_Body_Comic.mat";
         private const string Ordner = "Assets/Resources/Alex";
         private const string Controller = Ordner + "/AlexDialog.controller";
         private const string Prefab = Ordner + "/AlexDialog.prefab";
@@ -28,7 +30,7 @@ namespace Staffel2.Game.Editor
             Directory.CreateDirectory(Ordner);
             EbeneBenennen(AlexDialogStudio.Ebene, "Dialog");
 
-            // Material: Lit mit wenig Glanz, damit die gemalte Schattierung trägt.
+            // Material Kopf/Kapuze: Lit mit wenig Glanz, damit die gemalte Schattierung trägt.
             var mat = AssetDatabase.LoadAssetAtPath<Material>(Material);
             if (mat == null)
             {
@@ -41,12 +43,28 @@ namespace Staffel2.Game.Editor
             mat.SetFloat("_Metallic", 0f);
             EditorUtility.SetDirty(mat);
 
+            // Material Ganzkörper (Hoodie, Jeans, Sneaker): Lit mit wenig Glanz.
+            AssetDatabase.ImportAsset(KoerperTextur, ImportAssetOptions.ForceUpdate);
+            var bodyMat = AssetDatabase.LoadAssetAtPath<Material>(KoerperMaterial);
+            if (bodyMat == null)
+            {
+                bodyMat = new Material(Shader.Find("Universal Render Pipeline/Lit"));
+                AssetDatabase.CreateAsset(bodyMat, KoerperMaterial);
+            }
+            bodyMat.SetTexture("_BaseMap", AssetDatabase.LoadAssetAtPath<Texture2D>(KoerperTextur));
+            bodyMat.SetColor("_BaseColor", Color.white);
+            bodyMat.SetFloat("_Smoothness", 0.08f);
+            bodyMat.SetFloat("_Metallic", 0f);
+            EditorUtility.SetDirty(bodyMat);
+
+            AssetDatabase.ImportAsset(Fbx, ImportAssetOptions.ForceUpdate);
             var imp = (ModelImporter)AssetImporter.GetAtPath(Fbx);
             imp.animationType = ModelImporterAnimationType.Generic;
             imp.importBlendShapes = true;
             imp.importAnimation = true;
             imp.materialImportMode = ModelImporterMaterialImportMode.ImportViaMaterialDescription;
             imp.AddRemap(new AssetImporter.SourceAssetIdentifier(typeof(Material), "Alex_MatteComic"), mat);
+            imp.AddRemap(new AssetImporter.SourceAssetIdentifier(typeof(Material), "Alex_Body_Mat"), bodyMat);
             // Nur die drei Haltungen; die vom Exporter erzeugten Shape-Key-Takes („Key|…“) weglassen.
             var clips = imp.defaultClipAnimations
                 .Where(c => c.takeName.Contains("Alex_Idle") || c.takeName.Contains("Alex_Explain") || c.takeName.Contains("Alex_Listening"))
@@ -78,19 +96,30 @@ namespace Staffel2.Game.Editor
             PrefabUtility.SaveAsPrefabAsset(inst, Prefab);
             Object.DestroyImmediate(inst);
 
-            // Kenney-Platzhalter aus dem Raum nehmen: Alex meldet sich über den Pager.
+            // Lebensgroße 3D-Figur von Alex (1,80 m) direkt im Serverraum platzieren (ansprechbar mit E).
             var scene = EditorSceneManager.OpenScene("Assets/Scenes/Serverraum.unity");
-            bool entfernt = false;
-            foreach (var name in new[] { "AlexPlatzhalter", "Kollision_Alex" })
+            foreach (var name in new[] { "AlexPlatzhalter", "Kollision_Alex", "AlexRaumFigur" })
             {
-                var go = GameObject.Find(name);
-                if (go != null) { Object.DestroyImmediate(go); entfernt = true; }
+                var alt = GameObject.Find(name);
+                if (alt != null) Object.DestroyImmediate(alt);
             }
-            if (entfernt) { EditorSceneManager.MarkSceneDirty(scene); EditorSceneManager.SaveScene(scene); }
+            var prefabAsset = AssetDatabase.LoadAssetAtPath<GameObject>(Prefab);
+            var raumAlex = (GameObject)PrefabUtility.InstantiatePrefab(prefabAsset);
+            raumAlex.name = "AlexRaumFigur";
+            raumAlex.transform.position = new Vector3(1.55f, 0f, -0.15f);
+            raumAlex.transform.rotation = Quaternion.Euler(0f, -142f, 0f);
+            var col = raumAlex.AddComponent<BoxCollider>();
+            col.center = new Vector3(0f, 0.90f, 0f);
+            col.size = new Vector3(0.55f, 1.80f, 0.45f);
+            var inter = raumAlex.AddComponent<Staffel2.World.Interactable>();
+            inter.Configure("alex", "E – Mit Alex sprechen", raumAlex.GetComponentsInChildren<Renderer>());
+
+            EditorSceneManager.MarkSceneDirty(scene);
+            EditorSceneManager.SaveScene(scene);
 
             AssetDatabase.SaveAssets();
             var smr = AssetDatabase.LoadAllAssetsAtPath(Fbx).OfType<Mesh>().Select(m => $"{m.name}:{m.blendShapeCount}");
-            return $"Clips: {string.Join(", ", animClips.Select(c => c.name))} | Meshes: {string.Join(", ", smr)} | Platzhalter entfernt: {entfernt}";
+            return $"Clips: {string.Join(", ", animClips.Select(c => c.name))} | Meshes: {string.Join(", ", smr)} | AlexRaumFigur platziert";
         }
 
         private static string Kurzname(string take) =>

@@ -31,3 +31,6 @@
 
 # Gedächtnis-Datenbanken von KI-Werkzeugen
 .open-mem/
+
+# Blender-Sicherungen
+*.blend1
