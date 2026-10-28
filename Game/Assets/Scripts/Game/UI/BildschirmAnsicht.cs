@@ -318,7 +318,9 @@ namespace Staffel2.Game.UI
             new ScancodeMap(Key.F11, 0x57),
             new ScancodeMap(Key.F12, 0x58),
             new ScancodeMap(Key.CapsLock, 0x3A),
-            new ScancodeMap(Key.IntlBackslash, 0x56),   // <>| auf deutschen Tastaturen
+            // <>| zwischen linker Umschalttaste und Z (deutsche Tastatur); das Input System liefert
+            // diese Zusatztaste je nach Plattform meist als OEM1, garantiert ist das nicht.
+            new ScancodeMap(Key.OEM1, 0x56),
             new ScancodeMap(Key.NumLock, 0x45),
             new ScancodeMap(Key.NumpadMultiply, 0x37),
             new ScancodeMap(Key.NumpadMinus, 0x4A),
