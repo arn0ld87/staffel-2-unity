@@ -17,7 +17,15 @@ Diese Datei dokumentiert alle im Projekt „Ein Linux-Krimi – Staffel 2“ ver
 
 | Asset | Urheber / Quelle | Lizenz / Status | Verarbeitung im Repo | Verwendete Dateien im Projekt |
 |---|---|---|---|---|
-| **Alex-Büste (`Alex_Bueste.fbx`)** | Alexander Schneider (Alex' eigenes Modell aus `third_party_staging/alex_bueste.fbx`) | Eigenbestand / proprietär (**zu prüfen**: ursprüngliches Generierungs-/Scantool und ggf. Nutzungsbedingungen des Ausgangs-Generators vor der Blender-Nachbearbeitung) | Deterministisch nachbearbeitet über `tools/blender/alex_gesicht.py` (Shape Keys `Mund_Offen`, `Mund_Breit`, `Mund_Schmal`, `Blinzeln`, Mundraum, Comic-Material) und `Game/Assets/Scripts/Editor/Game/AlexBuilder.cs` | `Game/Assets/Art/Alex/Alex_Bueste.fbx`, `Game/Assets/Art/Alex/Alex_BaseColor.png`, `Game/Assets/Art/Alex/Alex_Comic.mat`, `Game/Assets/Resources/Alex/AlexDialog.prefab`, `Game/Assets/Resources/Alex/AlexDialog.controller` |
+| **Alex-Büste (`Alex_Bueste.fbx`, `Alex_BaseColor.png`)** | Alexander Schneider (eigene Vorlage `alex-dialog-bueste.fbx`) | CC BY-SA 4.0, ohne Persönlichkeitsrechte (siehe `LICENSE-INHALTE.md`; **zu prüfen**: mit welchem Werkzeug die Vorlage entstand und ob dessen Nutzungsbedingungen die Freigabe erlauben) | Nachbearbeitet über `tools/blender/alex_gesicht.py` (Shape Keys `Blinzeln_L`, `Blinzeln_R`, `Mund_Auf`, `Mund_Schmal`, `Neutral`) | `Game/Assets/Art/Alex/`, `Game/Assets/Resources/Alex/` |
+
+---
+
+## 2b. Figurenporträts (Herkunft offen)
+
+| Asset | Quelle | Lizenz / Status | Verwendete Dateien |
+|---|---|---|---|
+| Porträts Timo, Nadia, Margit, Kaffeeautomat | aus der Webversion übernommen; in deren Git-Historie nicht nachweisbar | **Zu prüfen**: Herkunft und Rechte. Bis dahin alle Rechte vorbehalten, nicht unter CC BY-SA | `Game/Assets/StreamingAssets/staffel2/bilder/*.webp` |
 
 ---
 
@@ -35,8 +43,8 @@ Diese Datei dokumentiert alle im Projekt „Ein Linux-Krimi – Staffel 2“ ver
 
 | Datei | Erzeugung | Lizenz | Beschreibung |
 |---|---|---|---|
-| `Game/Assets/Resources/Audio/rack_luefter.wav` | `tools/erzeuge-audio.py` | Projekteigentum (prozedural synthetisiert, keine Drittquelle) | Nahtlose 8-Sekunden-Schleife für das 3D-Rack-Grundrauschen im Serverraum |
-| `Game/Assets/Resources/Audio/ermittlung_teppich.wav` | `tools/erzeuge-audio.py` | Projekteigentum (prozedural synthetisiert, keine Drittquelle) | Nahtlose 16-Sekunden-Schleife für den leisen Ermittlungs-Klangteppich |
+| `Game/Assets/Resources/Audio/rack_luefter.wav` | `tools/erzeuge-audio.py` | CC BY-SA 4.0 (prozedural synthetisiert, keine Drittquelle; das Skript selbst steht unter MIT) | Nahtlose 8-Sekunden-Schleife für das 3D-Rack-Grundrauschen im Serverraum |
+| `Game/Assets/Resources/Audio/ermittlung_teppich.wav` | `tools/erzeuge-audio.py` | CC BY-SA 4.0 (prozedural synthetisiert, keine Drittquelle; das Skript selbst steht unter MIT) | Nahtlose 16-Sekunden-Schleife für den leisen Ermittlungs-Klangteppich |
 
 ---
 

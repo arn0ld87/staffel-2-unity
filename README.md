@@ -107,4 +107,8 @@ Builds/macOS/LinuxKrimi.app/Contents/MacOS/Ein\ Linux-Krimi\ -\ Staffel\ 2 \
 
 ## 7. Lizenzen
 
+- **Code:** MIT (`LICENSE`).
+- **Inhalte** (Episodentexte, Alex-Büste, eigene Klänge, Renderings, Demo-Video): CC BY-SA 4.0, ohne Persönlichkeitsrechte am Abbild (`LICENSE-INHALTE.md`).
+- **Ausgenommen:** Figurenporträts (Herkunft offen) und Drittanbieter-Assets.
+
 Alle verwendeten Drittanbieter-Assets (Kenney CC0, JetBrains Mono OFL 1.1, v86 BSD-2-Clause u. a.) sowie Eigenproduktionen sind in [`THIRD_PARTY_ASSETS.md`](THIRD_PARTY_ASSETS.md) aufgeführt.
