@@ -219,6 +219,126 @@ namespace Staffel2.World.Editor
 
             // Dezentes Akzent-Lichtband an der Nordwand über den Racks.
             Box("Akzentband", root, new Vector3(0, 2.35f, RoomD / 2 - 0.015f), new Vector3(8f, 0.05f, 0.03f), m.AkzentBand, false);
+            BuildBrandPosters(root, m);
+        }
+
+        /// <summary>Gerahmte Wandposter mit Referenzen auf alex-schneider.dev und die Blog-/Architektur-Themen.</summary>
+        static void BuildBrandPosters(Transform root, Mats m)
+        {
+            var ordner = new GameObject("Poster_AlexSchneiderDev").transform;
+            ordner.SetParent(root, false);
+
+            EnsureDarkBrandBanner("Assets/Art/Brand/alex-schneider-dev-banner.png");
+
+            Transform Poster(string name, string texPath, Vector3 pos, Vector3 lookDir, float breite, float hoehe, string untertitel)
+            {
+                var tex = AssetDatabase.LoadAssetAtPath<Texture2D>(texPath);
+                if (tex == null) return null;
+                var mat = Mat("Poster_" + name, new Color(0.82f, 0.82f, 0.82f), 0.08f, Color.black);
+                mat.SetTexture("_BaseMap", tex);
+                EditorUtility.SetDirty(mat);
+
+                var halter = new GameObject(name).transform;
+                halter.SetParent(ordner, false);
+                halter.localPosition = pos;
+                halter.localRotation = Quaternion.LookRotation(lookDir);
+
+                Box("Rahmen", halter, new Vector3(0, 0, -0.008f), new Vector3(breite + 0.06f, hoehe + 0.06f, 0.016f), m.EinschubA, false);
+                Box("Akzentkante", halter, new Vector3(0, hoehe * 0.5f + 0.025f, -0.014f), new Vector3(breite + 0.06f, 0.014f, 0.02f), m.Akzent, false);
+
+                var bild = GameObject.CreatePrimitive(PrimitiveType.Quad);
+                bild.name = "Bild";
+                bild.transform.SetParent(halter, false);
+                bild.transform.localPosition = new Vector3(0, 0, -0.018f);
+                bild.transform.localScale = new Vector3(breite, hoehe, 1f);
+                bild.GetComponent<Renderer>().sharedMaterial = mat;
+                UnityEngine.Object.DestroyImmediate(bild.GetComponent<Collider>());
+
+                if (!string.IsNullOrEmpty(untertitel))
+                {
+                    var labelGo = new GameObject("Beschriftung");
+                    labelGo.transform.SetParent(halter, false);
+                    labelGo.transform.localPosition = new Vector3(0, -hoehe * 0.5f + 0.055f, -0.022f);
+                    var tmp = labelGo.AddComponent<TextMeshPro>();
+                    tmp.rectTransform.sizeDelta = new Vector2(breite * 0.92f, 0.10f);
+                    tmp.text = untertitel;
+                    tmp.alignment = TextAlignmentOptions.Center;
+                    tmp.fontStyle = FontStyles.Bold;
+                    tmp.color = new Color(0.95f, 0.93f, 0.88f);
+                    tmp.enableAutoSizing = true;
+                    tmp.fontSizeMin = 0.08f;
+                    tmp.fontSizeMax = 0.42f;
+                }
+                return halter;
+            }
+
+            // 1. Hauptbanner alex-schneider.dev an der Ostwand direkt über dem Arbeitsplatz (Blick nach +X, Normal -X)
+            var haupt = Poster("Banner_AlexSchneiderDev", "Assets/Art/Brand/alex-schneider-dev-banner.png",
+                new Vector3(RoomW / 2 - 0.025f, 2.05f, -1.8f), Vector3.right, 1.55f, 0.72f,
+                "LINUX · CLOUD · KI-ARCHITEKTUR");
+            if (haupt != null)
+            {
+                var titelGo = new GameObject("DomainTitel");
+                titelGo.transform.SetParent(haupt, false);
+                titelGo.transform.localPosition = new Vector3(0.10f, 0.05f, -0.023f);
+                var tmp = titelGo.AddComponent<TextMeshPro>();
+                tmp.rectTransform.sizeDelta = new Vector2(1.20f, 0.28f);
+                tmp.text = "alex-schneider.dev";
+                tmp.alignment = TextAlignmentOptions.Center;
+                tmp.fontStyle = FontStyles.Bold;
+                tmp.color = new Color(0.96f, 0.94f, 0.90f);
+                tmp.enableAutoSizing = true;
+                tmp.fontSizeMin = 0.1f;
+                tmp.fontSizeMax = 1.1f;
+            }
+
+            // 2. Agora Knowledge Graph an der Südwand neben dem Arbeitsplatz (Normal +Z, Quad schaut nach -Z)
+            Poster("Poster_Agora", "Assets/Art/Brand/agora-knowledge-graph.png",
+                new Vector3(1.4f, 1.78f, -RoomD / 2 + 0.025f), Vector3.back, 1.35f, 0.76f,
+                "alex-schneider.dev · AGORA KNOWLEDGE GRAPH");
+
+            // 3. KI-Sysadmin an der Südwand links daneben
+            Poster("Poster_KiSysadmin", "Assets/Art/Brand/ki-sysadmin.png",
+                new Vector3(-1.2f, 1.78f, -RoomD / 2 + 0.025f), Vector3.back, 1.35f, 0.76f,
+                "alex-schneider.dev · KI-SYSADMIN & LINUX");
+
+            // 4. Podman & Docker an der Ostwand nördlich vom Schreibtisch
+            Poster("Poster_PodmanDocker", "Assets/Art/Brand/podman-docker.png",
+                new Vector3(RoomW / 2 - 0.025f, 1.78f, 1.2f), Vector3.right, 1.35f, 0.76f,
+                "alex-schneider.dev · PODMAN & DOCKER");
+        }
+
+        /// <summary>Ersetzt weißen SVG-Rasterhintergrund im Hauptbanner durch dunkles Anthrazit (#181a15).</summary>
+        static void EnsureDarkBrandBanner(string assetPath)
+        {
+            var fullPath = Path.Combine(Directory.GetCurrentDirectory(), assetPath);
+            if (!File.Exists(fullPath)) return;
+            var raw = File.ReadAllBytes(fullPath);
+            var tex = new Texture2D(2, 2, TextureFormat.RGBA32, false);
+            if (!tex.LoadImage(raw))
+            {
+                UnityEngine.Object.DestroyImmediate(tex);
+                return;
+            }
+            var corner = tex.GetPixel(4, 4);
+            if (corner.r < 0.85f || corner.g < 0.85f || corner.b < 0.85f)
+            {
+                UnityEngine.Object.DestroyImmediate(tex);
+                return;
+            }
+            var pixels = tex.GetPixels32();
+            var bg = new Color32(24, 26, 21, 255);
+            for (var i = 0; i < pixels.Length; i++)
+            {
+                var p = pixels[i];
+                if (p.r > 235 && p.g > 235 && p.b > 235)
+                    pixels[i] = bg;
+            }
+            tex.SetPixels32(pixels);
+            tex.Apply();
+            File.WriteAllBytes(fullPath, tex.EncodeToPNG());
+            UnityEngine.Object.DestroyImmediate(tex);
+            AssetDatabase.ImportAsset(assetPath, ImportAssetOptions.ForceUpdate);
         }
 
         /// <summary>Doppelboden: Fugen im 0,6-m-Raster, im kalten Gang gelochte Gitterkacheln.</summary>
