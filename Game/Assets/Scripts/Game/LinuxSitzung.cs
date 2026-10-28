@@ -152,29 +152,33 @@ namespace Staffel2.Game
                     case "agent": Agent?.OnLine(m.Line); break;
                     case "saved": _speichern?.TrySetResult(m.Text); break;
                     case "frame":
-                        if (m.Width > 0 && m.Height > 0 && m.Data != null && m.Data.Length == m.Width * m.Height * 4)
+                    {
+                        if (!_host.TakeFrame(out var px, out int fw, out int fh)) break;
+                        if (fw > 0 && fh > 0 && px != null && px.Length == fw * fh * 4)
                         {
-                            if (VmBildschirm == null || VmBildschirm.width != m.Width || VmBildschirm.height != m.Height)
+                            if (VmBildschirm == null || VmBildschirm.width != fw || VmBildschirm.height != fh)
                             {
                                 if (VmBildschirm != null) Destroy(VmBildschirm);
-                                VmBildschirm = new Texture2D(m.Width, m.Height, TextureFormat.RGBA32, false)
+                                VmBildschirm = new Texture2D(fw, fh, TextureFormat.RGBA32, false)
                                 {
                                     filterMode = FilterMode.Bilinear,
                                     wrapMode = TextureWrapMode.Clamp,
                                 };
                             }
-                            VmBildschirm.LoadRawTextureData(m.Data);
+                            VmBildschirm.LoadRawTextureData(px);
                             VmBildschirm.Apply(false);
                             VmBildschirmGrafisch = true;
                             VmBildschirmFrames++;
-                            VmBildschirmAktualisiert?.Invoke();
                         }
                         else
                         {
                             VmBildschirmGrafisch = false;
-                            VmBildschirmAktualisiert?.Invoke();
                         }
+                        // LoadRawTextureData kopiert; der Puffer kann für das nächste Bild wiederverwendet werden.
+                        _host.ReturnFrame(px);
+                        VmBildschirmAktualisiert?.Invoke();
                         break;
+                    }
                     case "error":
                         if (_speichern != null && !_speichern.Task.IsCompleted && m.Text != null && m.Text.StartsWith("Speichern"))
                             _speichern.TrySetException(new IOException(m.Text));

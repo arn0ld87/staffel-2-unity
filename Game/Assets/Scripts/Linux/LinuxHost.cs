@@ -14,12 +14,11 @@ namespace Staffel2.Linux
     public struct HostMessage
     {
         public string Type;      // booting | started | out | agent | frame | error | exit
-        public byte[] Data;      // bei out oder frame (RGBA32)
+        public byte[] Data;      // bei out
         public string Line;      // bei agent
         public string Text;      // bei error/exit
         public int Ms;           // bei started
-        public int Width;        // bei frame
-        public int Height;       // bei frame
+        // frame: nur ein Signal; das Bild selbst holt LinuxHost.TakeFrame ab.
     }
 
     /// <summary>
@@ -34,6 +33,12 @@ namespace Staffel2.Linux
     {
         private readonly ConcurrentQueue<HostMessage> _inbox = new ConcurrentQueue<HostMessage>();
         private readonly object _writeLock = new object();
+        // Grafischer Bildschirm: nur das neueste Bild zählt. Ein Fach für das wartende Bild und
+        // ein freier Puffer zur Wiederverwendung, damit nicht jedes Bild ~3 MB Speicher neu anlegt.
+        private readonly object _frameLock = new object();
+        private byte[] _frameWartend, _frameFrei;
+        private int _frameBreite, _frameHoehe;
+        private bool _frameMeldungOffen;
         private Process _process;
         private StreamWriter _stdin;
 
@@ -95,6 +100,57 @@ namespace Staffel2.Linux
         }
 
         public bool TryDequeue(out HostMessage message) => _inbox.TryDequeue(out message);
+
+        /// <summary>
+        /// Holt das neueste Bild nach einer "frame"-Meldung ab (Breite 0 = Textmodus, Pixel null).
+        /// Den Puffer nach dem Hochladen mit <see cref="ReturnFrame"/> zurückgeben.
+        /// </summary>
+        public bool TakeFrame(out byte[] pixels, out int width, out int height)
+        {
+            lock (_frameLock)
+            {
+                pixels = _frameWartend;
+                width = _frameBreite;
+                height = _frameHoehe;
+                bool da = _frameMeldungOffen;
+                _frameWartend = null;
+                _frameMeldungOffen = false;
+                return da;
+            }
+        }
+
+        /// <summary>Gibt einen Bildpuffer zur Wiederverwendung zurück.</summary>
+        public void ReturnFrame(byte[] pixels)
+        {
+            if (pixels == null) return;
+            lock (_frameLock) { if (_frameFrei == null) _frameFrei = pixels; }
+        }
+
+        private byte[] FramePuffer(int bytes)
+        {
+            lock (_frameLock)
+            {
+                var frei = _frameFrei;
+                _frameFrei = null;
+                return frei != null && frei.Length == bytes ? frei : new byte[bytes];
+            }
+        }
+
+        private void FrameAblegen(byte[] pixels, int width, int height)
+        {
+            bool melden;
+            lock (_frameLock)
+            {
+                // Ein noch nicht abgeholtes älteres Bild wird verworfen, sein Puffer wiederverwendet.
+                if (_frameWartend != null && _frameFrei == null) _frameFrei = _frameWartend;
+                _frameWartend = pixels;
+                _frameBreite = width;
+                _frameHoehe = height;
+                melden = !_frameMeldungOffen;
+                _frameMeldungOffen = true;
+            }
+            if (melden) _inbox.Enqueue(new HostMessage { Type = "frame" });
+        }
 
         /// <summary>Tastatur des Spielers → ttyS0.</summary>
         public void SendTerminal(byte[] bytes)
@@ -179,7 +235,7 @@ namespace Staffel2.Linux
                         if (w > 0 && h > 0 && b64.Length > 0)
                         {
                             byte[] compressed = Convert.FromBase64String(b64);
-                            raw = new byte[w * h * 4];
+                            raw = FramePuffer(w * h * 4);
                             using (var ms = new MemoryStream(compressed))
                             using (var ds = new System.IO.Compression.DeflateStream(ms, System.IO.Compression.CompressionMode.Decompress))
                             {
@@ -192,7 +248,7 @@ namespace Staffel2.Linux
                                 }
                             }
                         }
-                        _inbox.Enqueue(new HostMessage { Type = "frame", Width = w, Height = h, Data = raw });
+                        FrameAblegen(raw, raw != null ? w : 0, raw != null ? h : 0);
                         break;
                     }
                     case "error": _inbox.Enqueue(new HostMessage { Type = "error", Text = (string)o["message"] }); break;
